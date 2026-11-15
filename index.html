@@ -6,7 +6,7 @@
 </style></head><body>
 <section id="home" class="screen active"><div class="panel"><div class="center"><span class="pill">AVENTURA COOPERATIVA · 2 JUGADORES</span></div><h1>🐾 Gatitos al Rescate</h1><p class="muted">Dos gatitos unidos por una cuerda. ¡Ayúdense a escalar hasta la cima!</p><div class="cats"><span>🐱</span><span>🐈</span></div><div class="row"><button id="create">Crear sala</button></div><div class="row" style="margin-top:12px"><input id="codeIn" class="field" maxlength="4" placeholder="CÓDIGO" autocapitalize="characters" autocomplete="off" style="width:130px;text-align:center;font-weight:900;letter-spacing:4px;text-transform:uppercase"><button class="secondary" id="join">Unirse con código</button></div><p class="muted">Cada persona juega desde su propio dispositivo. Se necesita internet.</p></div></section>
 <section id="lobby" class="screen"><div class="panel"><h2>🏡 Sala de gatitos</h2><p class="muted">Comparte este código con tu compañera:</p><div class="center" id="roomCode">----</div><div class="center"><button class="secondary" id="copy">Copiar código</button></div><div class="slots"><div class="slot"><div style="font-size:38px">🐱</div><b>Anfitrión</b></div><div class="slot"><div style="font-size:38px">🐈</div><b id="guest">Esperando...</b><div id="status" class="pill">Sin conectar</div></div></div><p id="msg" class="muted">Conectando...</p><div class="row"><button id="start" disabled>Empezar aventura</button><button class="secondary" id="back">Volver</button></div><p class="help">El anfitrión debe mantener esta pantalla abierta mientras la invitada entra con el código.</p></div></section>
-<section id="gameScreen" class="screen"><div class="gamebar"><strong id="lev">Nivel 1 / 20</strong><strong id="cp">🐾 Inicio</strong><strong id="net">2 gatitos</strong><button class="secondary" id="exit">Salir</button></div><div class="gamewrap"><canvas id="game" width="960" height="540"></canvas><div class="hud"><span id="weather">☀️</span><span>🧶 ¡Cuiden la tensión!</span></div><div id="toast" class="toast"></div></div><div class="controls"><div class="pad"><button class="ctrl" data-k="left">◀</button><button class="ctrl" data-k="right">▶</button></div><button class="ctrl jump" data-k="jump">⬆ SALTAR</button></div><p class="help">A/D o ←/→ mover · W/↑/Espacio saltar. La cuerda tiene tensión elástica: si se alejan demasiado, se frenan y se tiran entre sí.</p></section>
+<section id="gameScreen" class="screen"><div class="gamebar"><strong id="lev">Nivel 1 / 20</strong><strong id="cp">🐾 Inicio</strong><strong id="net">2 gatitos</strong><button class="secondary" id="mute">🔊</button><button class="secondary" id="exit">Salir</button></div><div class="gamewrap"><canvas id="game" width="960" height="540"></canvas><div class="hud"><span id="weather">☀️</span><span>🧶 ¡Cuiden la tensión!</span></div><div id="toast" class="toast"></div></div><div class="controls"><div class="pad"><button class="ctrl" data-k="left">◀</button><button class="ctrl" data-k="right">▶</button></div><button class="ctrl jump" data-k="jump">⬆ SALTAR</button></div><p class="help">A/D o ←/→ mover · W/↑/Espacio saltar. Si uno se cae pero el otro sigue en una plataforma, cuelga de la cuerda: pulsen SALTAR en el aire para trepar, o salten el otro para jalarlo.</p></section>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script>
 (()=>{
 const $=id=>document.getElementById(id),screens=['home','lobby','gameScreen'];function show(id){screens.forEach(x=>$(x).classList.toggle('active',x===id))}
@@ -46,41 +46,84 @@ function wire(cn,my){let opened=false;const onOpen=()=>{if(opened||my!==tok)retu
   if(d.type==='input'&&host)remote=d.input;
   if(d.type==='start'&&!host)begin(d.state);
   if(d.type==='state'&&!host&&state){if(d.world)state.world=d.world;Object.assign(state,d.s);syncUI()}
-  if(d.type==='toast'&&!host)toast(d.t)});
+  if(d.type==='toast'&&!host)toast(d.t);if(d.type==='sfx'&&!host)play(d.n)});
  cn.on('close',()=>{if(my!==tok||(conn&&conn!==cn))return;online=false;if(conn===cn)conn=null;$('net').textContent='Desconectado';if(started){toast('La otra persona se desconectó')}else{setGuest(false);say(host?'Tu compañera se desconectó. Puede volver a entrar con el código.':'Se perdió la conexión con el anfitrión.')}});
  cn.on('error',()=>{if(my===tok)say('Error en la conexión. Intenta otra vez.')})}
 $('create').onclick=()=>makeRoom(true,null);
 $('join').onclick=()=>{let x=($('codeIn').value||'').trim().toUpperCase();if(/^[A-Z0-9]{4}$/.test(x))makeRoom(false,x);else{$('codeIn').focus();alert('Escribe el código de 4 caracteres.')}};
 $('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('join').click()});
+$('mute').textContent=muted?'🔇':'🔊';$('mute').onclick=()=>{muted=!muted;try{localStorage.setItem('gm',muted?'1':'0')}catch(e){}$('mute').textContent=muted?'🔇':'🔊'};
 $('copy').onclick=()=>{const ok=()=>say('Código copiado.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(room).then(ok).catch(()=>alert(room));else alert(room)};
 $('back').onclick=()=>{closeNet();show('home')};$('exit').onclick=()=>{closeNet();show('home')};
 $('start').onclick=()=>{if(host&&online){state=makeState();sentLevel=0;send({type:'start',state});begin(state)}};
+// ---------- Sonido (sintetizado, sin archivos) ----------
+let AC,muted=false;try{muted=localStorage.getItem('gm')==='1'}catch(e){}
+function unlock(){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,unlock,{passive:true}));
+function tone(f1,f2,dur,type,vol,delay){if(!AC||muted)return;delay=delay||0;let t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.12,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.03)}
+function noise(dur,vol,fc,delay){if(!AC||muted)return;let t=AC.currentTime+(delay||0),n=Math.floor(AC.sampleRate*dur),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);let s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fc;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t)}
+function meow(base,delay,dur){if(!AC||muted)return;dur=dur||.45;let t=AC.currentTime+(delay||0),o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(base,t);o.frequency.linearRampToValueAtTime(base*1.5,t+dur*.35);o.frequency.linearRampToValueAtTime(base*.8,t+dur);f.type='bandpass';f.Q.value=3;f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(1800,t+dur*.4);f.frequency.linearRampToValueAtTime(1000,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.3,t+.05);g.gain.linearRampToValueAtTime(.0001,t+dur);o.connect(f);f.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.05)}
+const SFX={
+ jump0(){tone(330,640,.13,'square',.06)},jump1(){tone(420,800,.13,'square',.06)},
+ tug(){tone(180,520,.2,'triangle',.14);noise(.08,.08,900)},
+ land(){noise(.09,.28,260)},
+ check(){[523,659,784,1047].forEach((f,i)=>tone(f,f,.16,'triangle',.13,i*.08));meow(700,.35,.3)},
+ fall(){tone(720,90,.7,'sawtooth',.08);meow(500,.6,.5)},
+ hurt(){noise(.2,.3,2000);meow(950,.05,.3)},
+ level(){[523,659,784,659,784,1047].forEach((f,i)=>tone(f,f,.14,'triangle',.13,i*.09));meow(650,.6,.35)},
+ win(){[523,659,784,1047,784,1047,1319,1568].forEach((f,i)=>tone(f,f,.2,'triangle',.14,i*.12));meow(600,1,.5)}};
+function play(n){try{let f=SFX[n];if(f)f()}catch(e){}}
+function sfx(n,sync){play(n);if(sync!==0&&host)send({type:'sfx',n})}
 const defs=['Pradera','Colinas','Bosque','Lluvia','Acantilados','Nieve','Cantera','Cascada','Cueva','Ruinas','Pinos','Ventisca','Volcán','Puentes','Nubes','Tormenta','Templo','Cumbre','Aurora','La gran cima'];
 const weather=i=>i===3||i===15?'rain':i===5||i===11?'snow':i===12?'ash':i===19?'aurora':'sun';
-function makeWorld(i){let len=3000+i*130,plats=[{x:0,y:475,w:480,h:65},{x:570,y:420,w:190,h:22}],x=850,n=0;while(x<len-300){let y=390-(n%5)*25-Math.min(i*2,65)+Math.random()*20,w=130+Math.random()*90;plats.push({x,y,w,h:22});x+=w+90+Math.random()*70;n++}plats.push({x:len-260,y:280,w:260,h:26});let cps=[];for(let a=950;a<len-400;a+=Math.max(850,len/4))cps.push({x:a,y:280,active:false});return{len,plats,cps,goal:{x:len-125,y:220},hazards:plats.filter((p,k)=>k>2&&k%5===0).map(p=>({x:p.x+p.w/2-12,y:p.y-18,w:24,h:18}))}}
+function makeWorld(i){let len=3000+i*130,plats=[{x:0,y:475,w:480,h:65},{x:570,y:420,w:190,h:22}],x=850,n=0;
+ while(x<len-300){let y=390-(n%5)*25-Math.min(i*2,65)+Math.random()*20,w=130+Math.random()*90;plats.push({x,y,w,h:22});x+=w+90+Math.random()*70;n++}
+ // Checkpoints: siempre sobre una plataforma real (se ensancha un poco) y sin pinchos en ella ni en las vecinas.
+ let N=plats.length,idx=[],cps=[];[.25,.5,.75].forEach(f=>{let k=Math.round(2+(N-3)*f);if(!idx.includes(k))idx.push(k)});
+ idx.forEach(k=>{let pl=plats[k];pl.w=Math.max(pl.w,190);cps.push({x:pl.x+pl.w/2,y:pl.y})});
+ let hazards=plats.filter((pl,k)=>k>2&&k%5===0&&!idx.some(c=>Math.abs(c-k)<=1)).map(pl=>({x:pl.x+pl.w/2-12,y:pl.y-18,w:24,h:18}));
+ plats.push({x:len-260,y:280,w:260,h:26});
+ return{len,plats,cps,goal:{x:len-125,y:220},hazards}}
 function makeState(){return{level:0,world:makeWorld(0),p:[{x:75,y:420,vx:0,vy:0,ground:false},{x:130,y:420,vx:0,vy:0,ground:false}],cam:0,checkpoint:0,won:false,t:0}}
 const WX={sun:'☀️ Día',rain:'🌧️ Lluvia',snow:'❄️ Nieve',ash:'🌋 Ceniza',aurora:'🌌 Aurora'};
 function syncUI(){$('lev').textContent=`Nivel ${state.level+1} / 20`;$('cp').textContent=state.checkpoint?'🚩 Checkpoint '+state.checkpoint:'🐾 Inicio';$('weather').textContent=WX[weather(state.level)];$('net').textContent=online?'2 gatitos':'Desconectado'}
 function begin(s){state=s||makeState();started=true;show('gameScreen');syncUI();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
 function toast(t,sync){if(sync&&host)send({type:'toast',t});$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1500)}
-function respawn(){let q=state.world.cps[state.checkpoint-1];state.p.forEach((p,i)=>{p.x=q?q.x+25+i*38:75+i*50;p.y=q?q.y-54:420;p.vx=p.vy=0});toast(q?'¡Checkpoint!':'¡Al inicio!',1)}
+function respawn(kind){let q=state.world.cps[state.checkpoint-1];state.p.forEach((p,i)=>{p.x=q?q.x-25+i*50:75+i*50;p.y=q?q.y-24:420;p.vx=p.vy=0;p.cd=0;p.pj=false;p.ground=false});toast(kind==='hurt'?'¡Ouch! 💥':q?'¡Checkpoint!':'¡Al inicio!',1);sfx(kind==='hurt'?'hurt':'fall')}
 function physics(dt){
- const ps=state.p,inputs=host?[local,remote]:[remote,local];let g=1500,acc=1250,max=245,jump=535;
- ps.forEach((p,i)=>{let a=inputs[i];if(a.left)p.vx-=acc*dt;if(a.right)p.vx+=acc*dt;if(!a.left&&!a.right)p.vx*=Math.pow(.001,dt);p.vx=Math.max(-max,Math.min(max,p.vx));if(a.jump&&p.ground){p.vy=-jump;p.ground=false}p.vy=Math.min(900,p.vy+g*dt);let ox=p.x,oy=p.y;p.x+=p.vx*dt;p.y+=p.vy*dt;p.ground=false;
- state.world.plats.forEach(pl=>{if(p.x+17>pl.x&&p.x-17<pl.x+pl.w&&oy+20<=pl.y&&p.y+20>=pl.y&&p.vy>=0){p.y=pl.y-20;p.vy=0;p.ground=true}});
- });
- // Cuerda elástica tipo resorte: longitud de reposo, rigidez y amortiguación.
- let a=ps[0],b=ps[1],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,rest=82,maxLen=145,k=17,damp=4.2;
- let nx=dx/d,ny=dy/d,rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
- let stretch=d-rest,force=stretch*k+rel*damp;force=Math.max(-120,Math.min(850,force));
- let fx=nx*force,fy=ny*force;
- a.vx+=fx*dt;a.vy+=fy*dt;b.vx-=fx*dt;b.vy-=fy*dt;
- // Límite de seguridad: la cuerda no puede estirarse infinitamente.
- if(d>maxLen){let excess=d-maxLen,fix=excess*.52;a.x+=nx*fix;a.y+=ny*fix;b.x-=nx*fix;b.y-=ny*fix;let separating=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(separating>0){a.vx+=nx*separating*.5;a.vy+=ny*separating*.5;b.vx-=nx*separating*.5;b.vy-=ny*separating*.5}}
+ const ps=state.p,inputs=[local,remote],g=1500,acc=1250,max=245,jump=535,rest=82,maxLen=145,A=ps[0],B=ps[1];
+ // 1) controles y gravedad
+ ps.forEach((p,i)=>{let a=inputs[i],o=ps[1-i];p.cd=Math.max(0,(p.cd||0)-dt);
+  if(a.left)p.vx-=acc*dt;if(a.right)p.vx+=acc*dt;if(!a.left&&!a.right)p.vx*=Math.pow(.001,dt);
+  p.vx=Math.max(-max,Math.min(max,p.vx));
+  let press=a.jump&&!p.pj;p.pj=a.jump;
+  if(a.jump&&p.ground){p.vy=-jump;p.ground=false;sfx('jump'+i);
+   // Si el otro cuelga de la cuerda, tu salto lo catapulta hacia arriba para que pueda volver a la plataforma.
+   {let dx=p.x-o.x,dy=p.y-o.y,d=Math.hypot(dx,dy)||1;if(!o.ground&&o.y>p.y+40&&d>maxLen*.85){o.vy=-720;o.vx+=dx/d*150;sfx('tug')}}}
+  // Colgado de la cuerda: saltar en el aire hace que la cuerda se encoja y te jale hacia tu compañero (para volver a subir).
+  else if(press&&!p.ground&&p.cd<=0&&(o.ground||o.y<p.y-10)&&p.vy>-150){let dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1;if(d>rest*1.15){p.vx+=dx/d*380;p.vy=dy/d*520-80;p.cd=.28;sfx('tug')}}
+  p.vy=Math.min(900,p.vy+g*dt)});
+ // 2) cuerda elástica (resorte)
+ let dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d,rel=(B.vx-A.vx)*nx+(B.vy-A.vy)*ny;
+ let force=Math.max(-120,Math.min(850,(d-rest)*17+rel*4.2)),fx=nx*force,fy=ny*force;
+ A.vx+=fx*dt;A.vy+=fy*dt;B.vx-=fx*dt;B.vy-=fy*dt;
+ // 3) mover y chocar con plataformas (ANTES del límite de cuerda)
+ ps.forEach(p=>{let wasG=p.ground,iv=p.vy,oy=p.y;p.x+=p.vx*dt;p.y+=p.vy*dt;p.ground=false;
+  state.world.plats.forEach(pl=>{if(p.x+17>pl.x&&p.x-17<pl.x+pl.w&&oy+20<=pl.y&&p.y+20>=pl.y&&p.vy>=0){p.y=pl.y-20;p.vy=0;p.ground=true}});
+  if(p.ground&&!wasG&&iv>380)sfx('land')});
+ // 4) límite de la cuerda: el gatito que está sobre una plataforma NO es arrastrado; solo el que cuelga se mueve.
+ dx=B.x-A.x;dy=B.y-A.y;d=Math.hypot(dx,dy)||1;nx=dx/d;ny=dy/d;
+ if(d>maxLen){let ex=d-maxLen;
+  if(A.ground&&B.ground){let e=Math.abs(dx)-maxLen,sx=Math.sign(dx)||1;if(e>0){A.x+=sx*e*.5;B.x-=sx*e*.5}}
+  else{let wa=.5,wb=.5;if(A.ground){wa=0;wb=1}else if(B.ground){wa=1;wb=0}
+   A.x+=nx*ex*wa;A.y+=ny*ex*wa;B.x-=nx*ex*wb;B.y-=ny*ex*wb;
+   let sep=(B.vx-A.vx)*nx+(B.vy-A.vy)*ny;if(sep>0){A.vx+=nx*sep*wa;A.vy+=ny*sep*wa;B.vx-=nx*sep*wb;B.vy-=ny*sep*wb}}}
  ps.forEach(p=>{if(p.x<17){p.x=17;if(p.vx<0)p.vx=0}});
- if(ps.some(p=>p.y>800)||ps.some(p=>state.world.hazards.some(h=>p.x+14>h.x&&p.x-14<h.x+h.w&&p.y+20>h.y&&p.y-10<h.y+h.h)))respawn();
- state.world.cps.forEach((q,i)=>{if(ps.some(p=>Math.abs(p.x-q.x)<55&&p.y<q.y+70)){if(state.checkpoint<i+1){state.checkpoint=i+1;syncUI();toast('Checkpoint guardado',1)}}});
- if(ps.every(p=>p.x>state.world.goal.x-35&&p.y<state.world.goal.y+100)){if(state.level===19){toast('¡LO LOGRARON! 🏆',1);state.won=true;return}state.level++;state.world=makeWorld(state.level);state.checkpoint=0;ps[0]={x:75,y:420,vx:0,vy:0,ground:false};ps[1]={x:130,y:420,vx:0,vy:0,ground:false};syncUI();toast('¡Nivel superado!',1)}
+ // 5) caída: solo se pierde si AMBOS caen al vacío; si uno sigue sobre una plataforma, el otro cuelga de la cuerda.
+ if(ps.every(p=>p.y>800)||ps.some(p=>p.y>1300)){respawn('fall')}
+ else if(ps.some(p=>state.world.hazards.some(h=>p.x+14>h.x&&p.x-14<h.x+h.w&&p.y+20>h.y&&p.y-10<h.y+h.h))){respawn('hurt')}
+ state.world.cps.forEach((q,i)=>{if(state.checkpoint<i+1&&ps.some(p=>Math.abs(p.x-q.x)<75&&Math.abs(p.y-(q.y-20))<70)){state.checkpoint=i+1;syncUI();toast('Checkpoint guardado',1);sfx('check')}});
+ if(ps.every(p=>p.x>state.world.goal.x-35&&p.y<state.world.goal.y+100)){if(state.level===19){toast('¡LO LOGRARON! 🏆',1);sfx('win');state.won=true;return}state.level++;state.world=makeWorld(state.level);state.checkpoint=0;ps[0]={x:75,y:420,vx:0,vy:0,ground:false};ps[1]={x:130,y:420,vx:0,vy:0,ground:false};syncUI();toast('¡Nivel superado!',1);sfx('level')}
  state.t+=dt;
 }
 function draw(){let ps=state.p,mid=(ps[0].x+ps[1].x)/2;state.cam=Math.max(0,Math.min(state.world.len-W,mid-W*.38));let cam=state.cam,w=weather(state.level);c.clearRect(0,0,W,H);let sky={sun:'#a9e2f4',rain:'#9bb8c9',snow:'#cfe5f0',ash:'#c9b8a5',aurora:'#233b67'}[w];c.fillStyle=sky;c.fillRect(0,0,W,H);
@@ -88,7 +131,7 @@ function draw(){let ps=state.p,mid=(ps[0].x+ps[1].x)/2;state.cam=Math.max(0,Math
  for(let j=0;j<7;j++){let x=(j*210-cam*.22%1400);c.fillStyle=w==='aurora'?'#526a9b':'#8fc4b8';c.beginPath();c.moveTo(x,360);c.lineTo(x+100,170+(j%3)*35);c.lineTo(x+220,360);c.fill()}
  for(let pl of state.world.plats){let x=pl.x-cam;if(x+pl.w<0||x>W)continue;c.fillStyle='#805a3c';c.fillRect(x,pl.y,pl.w,pl.h);c.fillStyle='#5e9b55';c.fillRect(x,pl.y,pl.w,8);c.fillStyle='#a17a52';for(let z=8;z<pl.w-8;z+=32){c.fillRect(x+z,pl.y+15,13,5);c.fillStyle='#765239';c.fillRect(x+z+12,pl.y+31,8,5);c.fillStyle='#a17a52'}}
  c.fillStyle='#d9534f';state.world.hazards.forEach(h=>{let x=h.x-cam;if(x<-30||x>W+30)return;c.beginPath();for(let k=0;k<3;k++){c.moveTo(x+k*8,h.y+h.h);c.lineTo(x+k*8+4,h.y);c.lineTo(x+k*8+8,h.y+h.h)}c.fill()});
- state.world.cps.forEach((q,i)=>{let x=q.x-cam;if(x>-30&&x<W+30){c.fillStyle='#765239';c.fillRect(x-3,q.y-35,6,35);c.fillStyle='#ffdf70';c.beginPath();c.moveTo(x,q.y-34);c.lineTo(x+33,q.y-25);c.lineTo(x,q.y-15);c.fill()}});
+ state.world.cps.forEach((q,i)=>{let x=q.x-cam;if(x>-30&&x<W+30){c.fillStyle='#765239';c.fillRect(x-3,q.y-35,6,35);c.fillStyle=state.checkpoint>i?'#ff7998':'#ffdf70';c.beginPath();c.moveTo(x,q.y-34);c.lineTo(x+33,q.y-25);c.lineTo(x,q.y-15);c.fill()}});
  let goal=state.world.goal;c.fillStyle='#ffe08a';c.fillRect(goal.x-cam,goal.y,8,80);c.fillStyle='#ff7998';c.beginPath();c.moveTo(goal.x-cam+8,goal.y);c.lineTo(goal.x-cam+55,goal.y+14);c.lineTo(goal.x-cam+8,goal.y+28);c.fill();
  // cuerda visible y ligeramente curvada por gravedad.
  let a=ps[0],b=ps[1],ax=a.x-cam, bx=b.x-cam,ay=a.y-4,by=b.y-4;c.strokeStyle='#7b4b38';c.lineWidth=7;c.beginPath();c.moveTo(ax,ay);c.quadraticCurveTo((ax+bx)/2,(ay+by)/2+Math.min(24,Math.abs(bx-ax)*.12),bx,by);c.stroke();c.strokeStyle='#f4c78c';c.lineWidth=2;c.stroke();
