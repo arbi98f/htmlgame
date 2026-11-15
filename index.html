@@ -5,7 +5,7 @@
 @media(max-width:600px){.slots{grid-template-columns:1fr}.screen{padding:10px}.panel{padding:15px}.cats{font-size:55px}.ctrl{width:54px}}
 </style></head><body>
 <section id="home" class="screen active"><div class="panel"><div class="center"><span class="pill">AVENTURA COOPERATIVA · 2 JUGADORES</span></div><h1>🐾 Gatitos al Rescate</h1><p class="muted">Dos gatitos unidos por una cuerda. ¡Ayúdense a escalar hasta la cima!</p><div class="cats"><span>🐱</span><span>🐈</span></div><div class="row"><button id="create">Crear sala</button></div><div class="row" style="margin-top:12px"><input id="codeIn" class="field" maxlength="4" placeholder="CÓDIGO" autocapitalize="characters" autocomplete="off" style="width:130px;text-align:center;font-weight:900;letter-spacing:4px;text-transform:uppercase"><button class="secondary" id="join">Unirse con código</button></div><p class="muted">Cada persona juega desde su propio dispositivo. Se necesita internet.</p></div></section>
-<section id="lobby" class="screen"><div class="panel"><h2>🏡 Sala de gatitos</h2><p class="muted">Comparte este código con tu compañera:</p><div class="center" id="roomCode">----</div><div class="center"><button class="secondary" id="copy">Copiar código</button></div><div class="slots"><div class="slot"><div style="font-size:38px">🐱</div><b>Anfitrión</b></div><div class="slot"><div style="font-size:38px">🐈</div><b id="guest">Esperando...</b><div id="status" class="pill">Sin conectar</div></div></div><p id="msg" class="muted">Conectando...</p><div class="row"><button id="start" disabled>Empezar aventura</button><button class="secondary" id="back">Volver</button></div><p class="help">Conexión online mediante PeerJS.</p></div></section>
+<section id="lobby" class="screen"><div class="panel"><h2>🏡 Sala de gatitos</h2><p class="muted">Comparte este código con tu compañera:</p><div class="center" id="roomCode">----</div><div class="center"><button class="secondary" id="copy">Copiar código</button></div><div class="slots"><div class="slot"><div style="font-size:38px">🐱</div><b>Anfitrión</b></div><div class="slot"><div style="font-size:38px">🐈</div><b id="guest">Esperando...</b><div id="status" class="pill">Sin conectar</div></div></div><p id="msg" class="muted">Conectando...</p><div class="row"><button id="start" disabled>Empezar aventura</button><button class="secondary" id="back">Volver</button></div><p class="help">El anfitrión debe mantener esta pantalla abierta mientras la invitada entra con el código.</p></div></section>
 <section id="gameScreen" class="screen"><div class="gamebar"><strong id="lev">Nivel 1 / 20</strong><strong id="cp">🐾 Inicio</strong><strong id="net">2 gatitos</strong><button class="secondary" id="exit">Salir</button></div><div class="gamewrap"><canvas id="game" width="960" height="540"></canvas><div class="hud"><span id="weather">☀️</span><span>🧶 ¡Cuiden la tensión!</span></div><div id="toast" class="toast"></div></div><div class="controls"><div class="pad"><button class="ctrl" data-k="left">◀</button><button class="ctrl" data-k="right">▶</button></div><button class="ctrl jump" data-k="jump">⬆ SALTAR</button></div><p class="help">A/D o ←/→ mover · W/↑/Espacio saltar. La cuerda tiene tensión elástica: si se alejan demasiado, se frenan y se tiran entre sí.</p></section>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script>
 (()=>{
@@ -16,13 +16,27 @@ function say(t){$('msg').textContent=t}function send(d){if(conn&&conn.open)try{c
 function closeNet(){started=false;tok++;if(raf)cancelAnimationFrame(raf);clearTimeout(joinT);if(conn)try{conn.close()}catch(e){}if(peer)try{peer.destroy()}catch(e){}peer=conn=null;online=false}
 const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};
 function setGuest(ok){$('guest').textContent=ok?'¡Conectado!':'Esperando...';$('status').textContent=ok?'Listo 🐾':'Sin conectar';$('start').disabled=!(ok&&host)}
-function makeRoom(h,code,tries=0){closeNet();let my=tok;host=h;room=code||Math.random().toString(36).slice(2,6).toUpperCase();$('roomCode').textContent=room;setGuest(false);show('lobby');if(!window.Peer){say('No se cargó el servicio de conexión. Revisa tu internet y recarga.');return}
- // IMPORTANTE: solo el anfitrión usa el ID de la sala. La invitada usa un ID aleatorio (antes usaba el mismo ID y daba "unavailable-id").
+function genCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<4;i++)r+=A[Math.floor(Math.random()*A.length)];return r}
+let joinN=0;
+async function wl(){try{if('wakeLock' in navigator&&!document.hidden)await navigator.wakeLock.request('screen')}catch(e){}}
+function tryJoin(my){if(my!==tok||online||!peer)return;joinN++;if(joinN>12){say('No se encontró la sala. Revisa el código y pide al anfitrión que mantenga su pantalla abierta.');return}
+ say('Buscando sala '+room+'... (intento '+joinN+')');try{if(conn)conn.close()}catch(e){}
+ conn=peer.connect('gatitos-'+room.toLowerCase(),{reliable:true,serialization:'json'});wire(conn,my);
+ clearTimeout(joinT);joinT=setTimeout(()=>{if(my===tok&&!online)tryJoin(my)},6000)}
+function makeRoom(h,code,tries=0){closeNet();let my=tok;host=h;joinN=0;room=code||genCode();$('roomCode').textContent=room;setGuest(false);show('lobby');wl();
+ if(!window.Peer){say('No se cargó PeerJS (revisa tu internet o bloqueador) y recarga la página.');return}
+ say(h?'Registrando sala en el servidor...':'Conectando al servidor...');
+ // Solo el anfitrión usa el ID de la sala; la invitada usa un ID aleatorio.
  peer=h?new Peer('gatitos-'+room.toLowerCase(),{debug:0,config:ICE}):new Peer({debug:0,config:ICE});
- peer.on('open',()=>{if(my!==tok)return;if(host)say('Sala creada. Comparte el código.');else{say('Buscando sala...');conn=peer.connect('gatitos-'+room.toLowerCase(),{reliable:true,serialization:'json'});wire(conn,my);joinT=setTimeout(()=>{if(my===tok&&!online)say('No se pudo conectar. Revisa el código o tu internet e intenta de nuevo.')},15000)}});
+ peer.on('open',()=>{if(my!==tok)return;if(host)say('✅ Sala lista. Pasa el código y ESPERA aquí con esta pantalla abierta.');else tryJoin(my)});
  peer.on('connection',x=>{if(my!==tok)return;if(!host||(conn&&conn.open)){try{x.close()}catch(e){}return}conn=x;wire(x,my)});
- peer.on('disconnected',()=>{if(my===tok&&peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
- peer.on('error',e=>{if(my!==tok)return;if(e.type==='unavailable-id'&&host&&tries<5){makeRoom(true,null,tries+1);return}say(e.type==='unavailable-id'?'Código ocupado, crea otra sala.':e.type==='peer-unavailable'?'No encontramos esa sala. Revisa el código (el anfitrión debe tener la sala abierta).':'Error de conexión ('+e.type+'). Intenta otra vez.')});
+ // Si el celular suspende la pestaña (p. ej. al ir a WhatsApp) el servidor olvida la sala: reconectar con el MISMO código.
+ peer.on('disconnected',()=>{if(my!==tok||!peer||peer.destroyed)return;say('Reconectando al servidor...');try{peer.reconnect()}catch(e){}});
+ peer.on('close',()=>{if(my!==tok)return;if(host&&!online&&!started)setTimeout(()=>{if(my===tok)makeRoom(true,room)},1000)});
+ peer.on('error',e=>{if(my!==tok)return;
+  if(e.type==='unavailable-id'&&host){if(tries<5)makeRoom(true,null,tries+1);else say('No se pudo crear la sala. Intenta otra vez.');return}
+  if(e.type==='peer-unavailable'&&!host){say('Sala no encontrada todavía... reintentando');clearTimeout(joinT);joinT=setTimeout(()=>tryJoin(my),2000);return}
+  say('Error ('+e.type+'): '+(e.message||'revisa tu internet')+'. Intenta otra vez.')});
 }
 function ready(){online=true;setGuest(true);say(host?'¡Tu compañera está dentro!':'Conectada. Espera al anfitrión.')}
 function wire(cn,my){let opened=false;const onOpen=()=>{if(opened||my!==tok)return;opened=true;ready();send({type:'hello'})};
@@ -33,9 +47,9 @@ function wire(cn,my){let opened=false;const onOpen=()=>{if(opened||my!==tok)retu
   if(d.type==='start'&&!host)begin(d.state);
   if(d.type==='state'&&!host&&state){if(d.world)state.world=d.world;Object.assign(state,d.s);syncUI()}
   if(d.type==='toast'&&!host)toast(d.t)});
- cn.on('close',()=>{if(my!==tok)return;online=false;if(conn===cn)conn=null;$('net').textContent='Desconectado';if(started){toast('La otra persona se desconectó')}else{setGuest(false);say(host?'Tu compañera se desconectó. Puede volver a entrar con el código.':'Se perdió la conexión con el anfitrión.')}});
+ cn.on('close',()=>{if(my!==tok||(conn&&conn!==cn))return;online=false;if(conn===cn)conn=null;$('net').textContent='Desconectado';if(started){toast('La otra persona se desconectó')}else{setGuest(false);say(host?'Tu compañera se desconectó. Puede volver a entrar con el código.':'Se perdió la conexión con el anfitrión.')}});
  cn.on('error',()=>{if(my===tok)say('Error en la conexión. Intenta otra vez.')})}
-$('create').onclick=()=>makeRoom(true);
+$('create').onclick=()=>makeRoom(true,null);
 $('join').onclick=()=>{let x=($('codeIn').value||'').trim().toUpperCase();if(/^[A-Z0-9]{4}$/.test(x))makeRoom(false,x);else{$('codeIn').focus();alert('Escribe el código de 4 caracteres.')}};
 $('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('join').click()});
 $('copy').onclick=()=>{const ok=()=>say('Código copiado.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(room).then(ok).catch(()=>alert(room));else alert(room)};
@@ -86,6 +100,7 @@ function draw(){let ps=state.p,mid=(ps[0].x+ps[1].x)/2;state.cam=Math.max(0,Math
 }
 function loop(now){if(!started)return;let dt=Math.min(.033,(now-last)/1000||.016);last=now;if(host){physics(dt);sendT+=dt;if(sendT>=.033||state.won){sendT=0;let m={type:'state',s:{level:state.level,p:state.p,checkpoint:state.checkpoint,won:state.won,t:state.t}};if(sentLevel!==state.level){m.world=state.world;sentLevel=state.level}send(m)}}draw();if(state.won){started=false;return}raf=requestAnimationFrame(loop)}
 function setKey(k,v){local[k]=v;if(!host)send({type:'input',input:local})}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(peer&&peer.disconnected&&!peer.destroyed)try{peer.reconnect()}catch(e){}wl()}});
 window.addEventListener('keydown',e=>{let k=['ArrowLeft','a','A'].includes(e.key)?'left':['ArrowRight','d','D'].includes(e.key)?'right':['ArrowUp','w','W',' '].includes(e.key)?'jump':null;if(k){e.preventDefault();setKey(k,true)}});
 window.addEventListener('keyup',e=>{let k=['ArrowLeft','a','A'].includes(e.key)?'left':['ArrowRight','d','D'].includes(e.key)?'right':['ArrowUp','w','W',' '].includes(e.key)?'jump':null;if(k)setKey(k,false)});
 document.querySelectorAll('[data-k]').forEach(b=>{let k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);setKey(k,true)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>setKey(k,false)))});
