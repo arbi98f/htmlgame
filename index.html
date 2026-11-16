@@ -12,7 +12,7 @@
             --neon-red: #ef4444;
             --neon-blue: #38bdf8;
             --neon-purple: #c084fc;
-            --dark-bg: #090b10;
+            --dark-bg: #07090e;
         }
         * {
             box-sizing: border-box;
@@ -33,16 +33,16 @@
             font-family: 'Press Start 2P', monospace;
         }
         .arcade-title {
-            text-shadow: 0 4px 0 #b91c1c, 0 8px 20px rgba(239, 68, 68, 0.7);
-            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 50%, #dc2626 100%);
+            text-shadow: 0 4px 0 #b91c1c, 0 8px 24px rgba(239, 68, 68, 0.75);
+            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 45%, #dc2626 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .arcade-panel {
-            background: linear-gradient(145deg, rgba(17, 24, 39, 0.92), rgba(9, 11, 16, 0.96));
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(7, 9, 14, 0.98));
             border: 2px solid rgba(250, 204, 21, 0.35);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(56, 189, 248, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.85), inset 0 0 20px rgba(56, 189, 248, 0.12);
+            backdrop-filter: blur(12px);
         }
         .btn-arcade {
             transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -51,7 +51,7 @@
         }
         .btn-arcade:hover:not(:disabled) {
             transform: translateY(-2px);
-            filter: brightness(1.12);
+            filter: brightness(1.15);
         }
         .btn-arcade:active:not(:disabled) {
             transform: translateY(2px);
@@ -66,11 +66,11 @@
             pointer-events: none;
         }
         .fighter-card {
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .fighter-card.selected {
             border-color: #facc15;
-            box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
+            box-shadow: 0 0 22px rgba(250, 204, 21, 0.65);
             transform: scale(1.04);
         }
         ::-webkit-scrollbar { width: 6px; }
@@ -97,10 +97,10 @@
 </head>
 <body class="relative flex items-center justify-center">
 
-    <!-- Efecto CRT sutil -->
+    <!-- Efecto CRT Retro -->
     <div class="scanlines fixed inset-0 z-50 opacity-30"></div>
 
-    <!-- Notificación Flotante -->
+    <!-- Notificaciones Flotantes -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Modal de Configuración / Mapeo de Controles -->
@@ -109,7 +109,7 @@
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
                     <h2 class="font-arcade text-lg sm:text-xl text-yellow-400">⚙️ AJUSTES DE CONTROLES</h2>
-                    <p class="text-xs text-slate-400">Personaliza la asignación de botones para Teclado y Mando</p>
+                    <p class="text-xs text-slate-400">Personaliza la asignación de botones para Teclado y Mando Xbox</p>
                 </div>
                 <button id="btn-close-settings" class="btn-arcade px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs font-bold">
                     ✕ CERRAR
@@ -124,18 +124,14 @@
 
             <!-- Panel Mando -->
             <div id="tab-panel-gamepad" class="flex flex-col gap-3">
-                <p class="text-xs text-sky-400">Haz clic en el botón que deseas cambiar y presiona la acción deseada en tu mando Xbox.</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="gamepad-binds-container">
-                    <!-- Dinámico -->
-                </div>
+                <p class="text-xs text-sky-400">Haz clic en el botón que deseas cambiar y presiona la acción en tu mando Xbox.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="gamepad-binds-container"></div>
             </div>
 
             <!-- Panel Teclado -->
             <div id="tab-panel-keyboard" class="hidden flex flex-col gap-3">
                 <p class="text-xs text-sky-400">Haz clic en la tecla que deseas cambiar y presiona la nueva tecla en tu teclado.</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="keyboard-binds-container">
-                    <!-- Dinámico -->
-                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="keyboard-binds-container"></div>
             </div>
 
             <div class="flex justify-between items-center border-t border-slate-800 pt-3">
@@ -149,17 +145,17 @@
         </div>
     </div>
 
-    <!-- ==================== PANTALLA 1: MENÚ PRINCIPAL Y SELECCIÓN ==================== -->
+    <!-- ==================== PANTALLA 1: MENÚ PRINCIPAL ==================== -->
     <div id="screen-menu" class="relative z-10 w-full max-w-6xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
         <header class="text-center py-2">
             <div class="inline-block px-3 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 text-xs font-bold tracking-widest uppercase mb-2">
-                EDICIÓN MULTIJUGADOR • HASTA 8 LUCHADORES
+                TEKKEN JUGGLE COMBOS • 8 ARENAS ÚNICAS • MULTIJUGADOR
             </div>
             <h1 class="font-arcade text-2xl sm:text-4xl md:text-5xl arcade-title tracking-wider leading-tight">
-                BATTLE ARENA 8
+                STREET BRAWL 8
             </h1>
             <p class="text-slate-400 text-sm sm:text-base mt-1 font-semibold tracking-wide">
-                ARCADE ROYALE • COMBATE POR SALAS Y PODERES ELEMENTALES
+                ARCADE ROYALE • EDICIÓN LEYENDAS Y PODERES ELEMENTALES
             </p>
         </header>
 
@@ -183,8 +179,8 @@
 
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Elige tu Estilo y Poder (8 Arquetipos)</span>
-                        <span id="selected-fighter-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">RONIN-STYLE • ENERGÍA AZUL</span>
+                        <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Roster de Luchadores (4 Hombres / 4 Mujeres)</span>
+                        <span id="selected-fighter-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">RONIN • ENERGÍA AZUL</span>
                     </div>
                     <div id="fighter-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
                 </div>
@@ -193,8 +189,8 @@
                     <div class="flex items-center gap-3">
                         <div id="detail-avatar" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold border-2 border-white/20 shadow-lg">🔥</div>
                         <div>
-                            <h3 id="detail-name" class="font-bold text-lg text-white leading-none">RONIN-STYLE</h3>
-                            <p id="detail-power" class="text-xs text-sky-400 font-semibold mt-1">Poder: Onda Azul • Super: Nova Estelar</p>
+                            <h3 id="detail-name" class="font-bold text-lg text-white leading-none">RONIN</h3>
+                            <p id="detail-power" class="text-xs text-sky-400 font-semibold mt-1">Poder: Onda Azul • Launcher: Corte Ascendente</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2 w-full sm:w-auto text-center">
@@ -212,26 +208,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3 mt-1">
-                    <div class="flex items-center justify-between gap-2 mb-2">
-                        <h3 class="font-arcade text-[10px] sm:text-xs text-sky-300">CONTROLES DE COMBATE</h3>
-                        <span class="text-[10px] text-slate-400">TECLADO / MANDO XBOX</span>
+
+                <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3">
+                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                        <h3 class="font-arcade text-[10px] sm:text-xs text-yellow-400">SISTEMA COMBOS Y BLOQUEO</h3>
+                        <span class="text-[10px] text-sky-300">TEKKEN JUGGLE MECHANICS</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div class="space-y-1.5" id="summary-keyboard-binds">
-                            <p class="text-yellow-300 font-extrabold tracking-wide">⌨️ TECLADO</p>
-                            <p class="text-slate-300"><b class="text-white">A / D</b> · Moverse | <b class="text-white">W / Flecha Arriba</b> · Saltar</p>
-                            <p class="text-slate-300"><b class="text-white">S</b> · Agacharse | <b class="text-white">J</b> · Puño débil | <b class="text-white">U</b> · Puño medio</p>
-                            <p class="text-slate-300"><b class="text-white">K</b> · Patada débil | <b class="text-white">I</b> · Patada media</p>
-                            <p class="text-slate-300"><b class="text-white">L</b> · Bloquear | <b class="text-white">O</b> · Súper</p>
-                        </div>
-                        <div class="space-y-1.5" id="summary-gamepad-binds">
-                            <p class="text-emerald-300 font-extrabold tracking-wide">🎮 MANDO XBOX</p>
-                            <p class="text-slate-300"><b class="text-white">Cruceta / Stick izq.</b> · Moverse y Saltar (↑)</p>
-                            <p class="text-slate-300"><b class="text-white">X</b> · Puño débil | <b class="text-white">Y</b> · Puño medio | <b class="text-white">LB</b> · Puño fuerte</p>
-                            <p class="text-slate-300"><b class="text-white">A</b> · Patada débil | <b class="text-white">B</b> · Patada media | <b class="text-white">RB</b> · Patada fuerte</p>
-                            <p class="text-slate-300"><b class="text-white">B + Dirección</b> · Poder especial | <b class="text-white">RT</b> · Súper</p>
-                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                        <p>🚀 <b class="text-white">Launcher:</b> Presiona <b class="text-yellow-300">↑ + Puño Medio / U</b> para elevar al rival.</p>
+                        <p>🥊 <b class="text-white">Juggle:</b> Golpea al rival suspendido en el aire para encadenar combos.</p>
+                        <p>🛡️ <b class="text-white">Bloqueo Frontal:</b> Mantén <b class="text-yellow-300">L / LB</b> encarando al oponente.</p>
+                        <p>💥 <b class="text-white">Espalda Expuesta:</b> Los impactos por la espalda rompen la guardia y aplican Stun.</p>
                     </div>
                 </div>
             </div>
@@ -246,7 +233,7 @@
                     </div>
 
                     <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 flex flex-col gap-2.5">
-                        <p class="text-xs text-slate-300">Crea una arena privada de hasta <strong class="text-yellow-400">8 jugadores</strong>, comparte el código o rellena con Bots IA.</p>
+                        <p class="text-xs text-slate-300">Crea una arena privada de hasta <strong class="text-yellow-400">8 jugadores</strong> o lucha contra la IA en 8 mapas temáticos.</p>
                         <button id="btn-create-room" class="btn-arcade w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 text-white font-arcade text-xs sm:text-sm tracking-wide cursor-pointer">
                             ⚡ CREAR NUEVA SALA
                         </button>
@@ -263,39 +250,9 @@
                         </div>
                     </div>
 
-                    <button id="btn-quick-match" class="btn-arcade w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs sm:text-sm tracking-wider cursor-pointer">
-                        🔥 BATALLA RÁPIDA INSTANTÁNEA (1 vs 7 BOTS)
+                    <button id="btn-quick-match" class="btn-arcade w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs sm:text-sm tracking-wider cursor-pointer">
+                        🔥 BATALLA RÁPIDA (1 JUGADOR VS 7 BOTS)
                     </button>
-                </div>
-
-                <div class="arcade-panel rounded-2xl p-4 flex flex-col gap-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Controles Rápidos</h3>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Saltar</span>
-                            <span class="font-bold text-yellow-400">Cruceta ↑ / W</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Puño / Patada Débil</span>
-                            <span class="font-bold text-white">X / A (Mando)</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Puño / Patada Medio</span>
-                            <span class="font-bold text-orange-400">Y / B (Mando)</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Puño / Patada Fuerte</span>
-                            <span class="font-bold text-sky-400">LB / RB (Mando)</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Poder Especial</span>
-                            <span class="font-bold text-purple-400">B + Dir / U</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">SÚPER (100% MP)</span>
-                            <span class="font-bold text-red-400">RT / O</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -303,10 +260,10 @@
 
     <!-- ==================== PANTALLA 2: LOBBY DE SALA ==================== -->
     <div id="screen-lobby" class="hidden relative z-10 w-full max-w-5xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
-        <div class="arcade-panel rounded-2xl p-4 sm:p-6 flex flex-col gap-5">
+        <div class="arcade-panel rounded-2xl p-4 sm:p-6 flex flex-col gap-4">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
-                    <span class="text-xs uppercase tracking-widest text-sky-400 font-bold">SALA DE ESPERA • ARENA MULTIJUGADOR</span>
+                    <span class="text-xs uppercase tracking-widest text-sky-400 font-bold">SALA DE ESPERA • CONFIGURACIÓN DE ARENA</span>
                     <div class="flex items-center gap-3 mt-1">
                         <h2 class="font-arcade text-xl sm:text-3xl text-yellow-400 tracking-widest" id="lobby-room-code">ARENA</h2>
                         <button id="btn-copy-code" class="btn-arcade px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-yellow-500/40 text-yellow-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
@@ -316,20 +273,50 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <select id="select-arena" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white outline-none">
-                        <option value="suzaku">🏯 TEMPLO ANCESTRAL (NOCHE)</option>
-                        <option value="cyber">🌃 DOJO CYBER NEÓN</option>
-                        <option value="volcano">🌋 CRÁTER VOLCÁNICO</option>
-                    </select>
                     <button id="btn-leave-room" class="btn-arcade px-4 py-2 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs font-bold cursor-pointer">
                         SALIR
                     </button>
                 </div>
             </div>
 
+            <!-- Selectores del Host: Mapa, Dificultad IA y Duración -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                <div>
+                    <label class="block text-[11px] font-bold text-yellow-400 uppercase mb-1">🗺️ Escenario Temático</label>
+                    <select id="select-arena" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white outline-none focus:border-yellow-400">
+                        <option value="random">🎲 ALEATORIO (RANDOM)</option>
+                        <option value="suzaku">🏯 Santuario Ancestral</option>
+                        <option value="volcano">🌋 Cráter Ígneo</option>
+                        <option value="eclipse">🌑 Cúpula del Eclipse</option>
+                        <option value="cyber">🌃 Ciudad Neón</option>
+                        <option value="lab">🧪 Laboratorio Cuántico</option>
+                        <option value="emerald">🎋 Templo Esmeralda</option>
+                        <option value="seismic">🪨 Abismo Sísmico</option>
+                        <option value="toxic">☣️ Foso Tóxico</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-sky-400 uppercase mb-1">🤖 Dificultad IA Bots</label>
+                    <select id="select-difficulty" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white outline-none focus:border-sky-400">
+                        <option value="easy">🌱 FÁCIL (Reacción Lenta)</option>
+                        <option value="normal" selected>⚔️ NORMAL (Equilibrado)</option>
+                        <option value="hardcore">🔥 HARDCORE / PRO (Combos & Juggle)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-emerald-400 uppercase mb-1">⏱️ Duración de Partida</label>
+                    <select id="select-timer-mode" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white outline-none focus:border-emerald-400">
+                        <option value="99">⏳ Clásico (99 Segundos)</option>
+                        <option value="infinite">♾️ Tiempo Infinito (∞)</option>
+                    </select>
+                </div>
+            </div>
+
             <div id="host-controls" class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/70 p-3 rounded-xl border border-slate-800">
                 <div class="text-xs sm:text-sm text-slate-300">
-                    <span class="font-bold text-yellow-400" id="lobby-count">1/8</span> Luchadores listos. Comparte el código o añade Bots IA.
+                    <span class="font-bold text-yellow-400" id="lobby-count">1/8</span> Luchadores listos.
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <button id="btn-add-bot" class="btn-arcade px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer">
@@ -347,7 +334,7 @@
             <div id="lobby-slots-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3"></div>
 
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-800">
-                <p id="lobby-status-msg" class="text-xs text-slate-400">Se requieren al menos 2 luchadores (jugadores o bots) para comenzar.</p>
+                <p id="lobby-status-msg" class="text-xs text-slate-400">Se requieren al menos 2 luchadores para comenzar.</p>
                 <button id="btn-start-match" class="btn-arcade w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-arcade text-xs sm:text-sm tracking-wider cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                     ⚔️ ¡INICIAR COMBATE!
                 </button>
@@ -362,6 +349,7 @@
                 <div class="flex items-center justify-between text-[10px] sm:text-xs font-bold text-slate-300 px-1">
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 font-arcade text-[10px]" id="hud-room-code">SALA: -----</span>
+                        <span id="hud-arena-name" class="px-2 py-0.5 rounded bg-sky-500/20 border border-sky-500/40 text-sky-300 font-bold text-[10px]">MAPA: ---</span>
                         <span id="hud-alive-count" class="text-emerald-400">VIVOS: 8/8</span>
                     </div>
                     <div class="font-arcade text-sm sm:text-lg text-yellow-400 drop-shadow" id="hud-timer">99</div>
@@ -395,9 +383,9 @@
                 <button data-key="ArrowRight" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▶</button>
             </div>
             <div class="grid grid-cols-3 gap-2 pointer-events-auto">
-                <button data-key="KeyL" class="touch-btn w-12 h-12 rounded-full bg-sky-600/80 border-2 border-sky-300 font-bold text-xs flex items-center justify-center">ESC</button>
+                <button data-key="KeyL" class="touch-btn w-12 h-12 rounded-full bg-sky-600/80 border-2 border-sky-300 font-bold text-xs flex items-center justify-center">BLOQ</button>
                 <button data-key="KeyU" class="touch-btn w-12 h-12 rounded-full bg-purple-600/80 border-2 border-purple-300 font-bold text-xs flex items-center justify-center">PODER</button>
-                <button data-key="KeyI" class="touch-btn w-12 h-12 rounded-full bg-red-600/80 border-2 border-red-300 font-bold text-xs flex items-center justify-center">SUPER</button>
+                <button data-key="KeyO" class="touch-btn w-12 h-12 rounded-full bg-red-600/80 border-2 border-red-300 font-bold text-xs flex items-center justify-center">SUPER</button>
                 <button data-key="KeyJ" class="touch-btn w-12 h-12 rounded-full bg-amber-500/80 border-2 border-amber-200 font-bold text-xs flex items-center justify-center">PUÑO</button>
                 <button data-key="KeyK" class="touch-btn w-12 h-12 rounded-full bg-orange-600/80 border-2 border-orange-300 font-bold text-xs flex items-center justify-center">PATADA</button>
             </div>
@@ -433,8 +421,9 @@
         </div>
     </div>
 
-    <!-- ==================== LÓGICA DEL JUEGO ==================== -->
+    <!-- PeerJS Lib -->
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
     <script type="module">
         // =========================================================================
         // MAPEO DE CONTROLES RECONFIGURABLES
@@ -447,7 +436,7 @@
             kickMedium: 1,   // B
             kickStrong: 5,   // RB
             super: 7,        // RT
-            block: 6         // LT (o LB alternativo)
+            block: 6         // LT
         };
 
         const DEFAULT_KEYBOARD_BINDS = {
@@ -467,202 +456,145 @@
         let currentKeyboardBinds = JSON.parse(localStorage.getItem('keyboard_binds')) || JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_BINDS));
 
         const GAMEPAD_BUTTON_NAMES = {
-            0: 'A',
-            1: 'B',
-            2: 'X',
-            3: 'Y',
-            4: 'LB',
-            5: 'RB',
-            6: 'LT',
-            7: 'RT',
-            8: 'Back / View',
-            9: 'Start / Menu',
-            10: 'L3 (Stick Izq.)',
-            11: 'R3 (Stick Der.)',
-            12: 'Cruceta Arriba',
-            13: 'Cruceta Abajo',
-            14: 'Cruceta Izquierda',
-            15: 'Cruceta Derecha'
+            0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 6: 'LT', 7: 'RT',
+            8: 'Back', 9: 'Start', 10: 'L3', 11: 'R3',
+            12: 'Cruz ↑', 13: 'Cruz ↓', 14: 'Cruz ←', 15: 'Cruz →'
         };
 
         const BIND_LABELS = {
-            punchWeak: 'Puño débil',
-            punchMedium: 'Puño medio',
-            punchStrong: 'Puño fuerte',
-            kickWeak: 'Patada débil',
-            kickMedium: 'Patada media',
-            kickStrong: 'Patada fuerte',
-            super: 'Súper',
-            block: 'Bloquear',
-            up: 'Saltar',
-            down: 'Agacharse',
-            left: 'Mover Izquierda',
-            right: 'Mover Derecha'
+            punchWeak: 'Puño débil', punchMedium: 'Puño medio / Launcher', punchStrong: 'Puño fuerte',
+            kickWeak: 'Patada débil', kickMedium: 'Patada media', kickStrong: 'Patada fuerte',
+            super: 'Súper', block: 'Bloquear', up: 'Saltar', down: 'Agacharse',
+            left: 'Mover Izquierda', right: 'Mover Derecha'
         };
 
         let activeRebindAction = null;
-        let activeRebindType = null; // 'gamepad' o 'keyboard'
+        let activeRebindType = null;
 
         // =========================================================================
-        // 1. 8 ARQUETIPOS (NOMBRES ORIGINALES Y VARIADOS)
+        // 1. DEFINICIÓN DE 8 MAPAS TEMÁTICOS ÚNICOS
+        // =========================================================================
+        const ARENAS = {
+            suzaku: {
+                id: 'suzaku', name: 'Santuario Ancestral', icon: '🏯',
+                bgGradient: ['#060814', '#161e38', '#3b1c54'],
+                moonColor: 'rgba(250, 204, 21, 0.2)', floorColor: '#334155', accentColor: '#facc15',
+                soundType: 'wind'
+            },
+            volcano: {
+                id: 'volcano', name: 'Cráter Ígneo', icon: '🌋',
+                bgGradient: ['#120303', '#3d0808', '#7c2d12'],
+                moonColor: 'rgba(249, 115, 22, 0.3)', floorColor: '#451a03', accentColor: '#f97316',
+                soundType: 'rumble'
+            },
+            eclipse: {
+                id: 'eclipse', name: 'Cúpula del Eclipse', icon: '🌑',
+                bgGradient: ['#030206', '#1a0b2e', '#3b0764'],
+                moonColor: 'rgba(239, 68, 68, 0.4)', floorColor: '#2e1065', accentColor: '#c084fc',
+                soundType: 'dark'
+            },
+            cyber: {
+                id: 'cyber', name: 'Ciudad Neón', icon: '🌃',
+                bgGradient: ['#020617', '#0f172a', '#1e1b4b'],
+                moonColor: 'rgba(34, 211, 238, 0.25)', floorColor: '#0f172a', accentColor: '#22d3ee',
+                soundType: 'cyber'
+            },
+            lab: {
+                id: 'lab', name: 'Laboratorio Cuántico', icon: '🧪',
+                bgGradient: ['#021217', '#062c38', '#084b5c'],
+                moonColor: 'rgba(56, 189, 248, 0.3)', floorColor: '#0e3a47', accentColor: '#38bdf8',
+                soundType: 'tech'
+            },
+            emerald: {
+                id: 'emerald', name: 'Templo Esmeralda', icon: '🎋',
+                bgGradient: ['#02140a', '#06371e', '#045c30'],
+                moonColor: 'rgba(52, 211, 153, 0.25)', floorColor: '#064e3b', accentColor: '#34d399',
+                soundType: 'bamboo'
+            },
+            seismic: {
+                id: 'seismic', name: 'Abismo Sísmico', icon: '🪨',
+                bgGradient: ['#140f06', '#38270f', '#573a11'],
+                moonColor: 'rgba(217, 119, 6, 0.25)', floorColor: '#451a03', accentColor: '#d97706',
+                soundType: 'earth'
+            },
+            toxic: {
+                id: 'toxic', name: 'Foso Tóxico', icon: '☣️',
+                bgGradient: ['#0c1402', '#1f3805', '#365314'],
+                moonColor: 'rgba(163, 230, 53, 0.3)', floorColor: '#1a2e05', accentColor: '#a3e635',
+                soundType: 'acid'
+            }
+        };
+
+        // =========================================================================
+        // 2. ROSTER DE 8 LUCHADORES ÚNICOS (4 H / 4 M)
         // =========================================================================
         const FIGHTER_ARCHETYPES = [
             {
-                id: 'ronin',
-                name: 'RONIN-STYLE',
-                element: 'Energía Azul',
-                powerName: 'Onda Azul',
-                superName: 'Nova Estelar',
-                primary: '#38bdf8',
-                secondary: '#0284c7',
-                giColor: '#f8fafc',
-                bandColor: '#ef4444',
-                skin: '#f1c27d',
-                icon: '🔵',
-                stats: { atk: 4, spd: 4, pwr: 5 },
-                speed: 5.2,
-                jumpForce: -14.2,
-                projSpeed: 9.8,
-                projColor: '#38bdf8'
+                id: 'ronin', name: 'RONIN', gender: 'male', element: 'Energía Azul',
+                powerName: 'Onda Azul', superName: 'Nova Estelar', homeArena: 'suzaku',
+                primary: '#38bdf8', secondary: '#0284c7', giColor: '#f8fafc', bandColor: '#ef4444', skin: '#f1c27d', icon: '🔵',
+                accessory: 'scarf', stats: { atk: 4, spd: 4, pwr: 5 }, speed: 5.3, jumpForce: -14.4, projSpeed: 9.8, projColor: '#38bdf8'
             },
             {
-                id: 'blaze',
-                name: 'BLAZE-STYLE',
-                element: 'Fuego Carmesí',
-                powerName: 'Orbe Ígneo',
-                superName: 'Erupción Solar',
-                primary: '#f97316',
-                secondary: '#dc2626',
-                giColor: '#dc2626',
-                bandColor: '#facc15',
-                skin: '#f1c27d',
-                icon: '🔥',
-                stats: { atk: 5, spd: 4, pwr: 4 },
-                speed: 5.4,
-                jumpForce: -14.5,
-                projSpeed: 10.2,
-                projColor: '#f97316'
+                id: 'blaze', name: 'BLAZE', gender: 'female', element: 'Fuego Carmesí',
+                powerName: 'Orbe Ígneo', superName: 'Erupción Solar', homeArena: 'volcano',
+                primary: '#f97316', secondary: '#dc2626', giColor: '#dc2626', bandColor: '#facc15', skin: '#f1c27d', icon: '🔥',
+                accessory: 'flameAura', stats: { atk: 5, spd: 4, pwr: 4 }, speed: 5.5, jumpForce: -14.6, projSpeed: 10.2, projColor: '#f97316'
             },
             {
-                id: 'storm',
-                name: 'STORM-STYLE',
-                element: 'Rayo Celeste',
-                powerName: 'Pulso Eléctrico',
-                superName: 'Tormenta Voltio',
-                primary: '#60a5fa',
-                secondary: '#fde047',
-                giColor: '#2563eb',
-                bandColor: '#f8fafc',
-                skin: '#f5cba7',
-                icon: '⚡',
-                stats: { atk: 3, spd: 5, pwr: 4 },
-                speed: 6.0,
-                jumpForce: -15.0,
-                projSpeed: 11.2,
-                projColor: '#fde047'
+                id: 'storm', name: 'STORM', gender: 'male', element: 'Rayo Celeste',
+                powerName: 'Pulso Eléctrico', superName: 'Tormenta Voltio', homeArena: 'seismic',
+                primary: '#60a5fa', secondary: '#fde047', giColor: '#2563eb', bandColor: '#f8fafc', skin: '#f5cba7', icon: '⚡',
+                accessory: 'pauldrons', stats: { atk: 3, spd: 5, pwr: 4 }, speed: 6.1, jumpForce: -15.2, projSpeed: 11.2, projColor: '#fde047'
             },
             {
-                id: 'phantom',
-                name: 'PHANTOM-STYLE',
-                element: 'Oscuridad Satsui',
-                powerName: 'Espectro Oscuro',
-                superName: 'Eclipse Total',
-                primary: '#c084fc',
-                secondary: '#581c87',
-                giColor: '#1e1b4b',
-                bandColor: '#ef4444',
-                skin: '#d2a679',
-                icon: '🌑',
-                stats: { atk: 5, spd: 4, pwr: 5 },
-                speed: 5.3,
-                jumpForce: -14.2,
-                projSpeed: 10.0,
-                projColor: '#a855f7'
+                id: 'vixen', name: 'VIXEN', gender: 'female', element: 'Oscuridad Satsui',
+                powerName: 'Espectro Oscuro', superName: 'Eclipse Total', homeArena: 'eclipse',
+                primary: '#c084fc', secondary: '#581c87', giColor: '#1e1b4b', bandColor: '#ef4444', skin: '#d2a679', icon: '🌑',
+                accessory: 'energyWings', stats: { atk: 5, spd: 4, pwr: 5 }, speed: 5.4, jumpForce: -14.3, projSpeed: 10.0, projColor: '#a855f7'
             },
             {
-                id: 'cyborg',
-                name: 'CYBORG-STYLE',
-                element: 'Plasma Neón',
-                powerName: 'Láser Cuántico',
-                superName: 'Cañón Satelital',
-                primary: '#22d3ee',
-                secondary: '#ec4899',
-                giColor: '#0f172a',
-                bandColor: '#22d3ee',
-                skin: '#94a3b8',
-                icon: '🤖',
-                stats: { atk: 4, spd: 5, pwr: 4 },
-                speed: 5.7,
-                jumpForce: -14.5,
-                projSpeed: 12.0,
-                projColor: '#22d3ee'
+                id: 'cyborg', name: 'CYBORG', gender: 'male', element: 'Plasma Neón',
+                powerName: 'Láser Cuántico', superName: 'Cañón Satelital', homeArena: 'cyber',
+                primary: '#22d3ee', secondary: '#ec4899', giColor: '#0f172a', bandColor: '#22d3ee', skin: '#94a3b8', icon: '🤖',
+                accessory: 'visor', stats: { atk: 4, spd: 5, pwr: 4 }, speed: 5.8, jumpForce: -14.7, projSpeed: 12.0, projColor: '#22d3ee'
             },
             {
-                id: 'titan',
-                name: 'TITAN-STYLE',
-                element: 'Roca Sísmica',
-                powerName: 'Meteoro Telúrico',
-                superName: 'Cataclismo Pétreo',
-                primary: '#d97706',
-                secondary: '#78350f',
-                giColor: '#78350f',
-                bandColor: '#fbbf24',
-                skin: '#c68642',
-                icon: '🪨',
-                stats: { atk: 5, spd: 3, pwr: 5 },
-                speed: 4.4,
-                jumpForce: -13.5,
-                projSpeed: 8.8,
-                projColor: '#f59e0b'
+                id: 'zephyra', name: 'ZEPHYRA', gender: 'female', element: 'Tornado Esmeralda',
+                powerName: 'Cuchilla de Viento', superName: 'Huracán Cortante', homeArena: 'emerald',
+                primary: '#34d399', secondary: '#059669', giColor: '#065f46', bandColor: '#a7f3d0', skin: '#f1c27d', icon: '🌪️',
+                accessory: 'ribbons', stats: { atk: 3, spd: 5, pwr: 4 }, speed: 6.3, jumpForce: -15.6, projSpeed: 11.5, projColor: '#34d399'
             },
             {
-                id: 'zephyr',
-                name: 'ZEPHYR-STYLE',
-                element: 'Tornado Esmeralda',
-                powerName: 'Cuchilla de Viento',
-                superName: 'Huracán Cortante',
-                primary: '#34d399',
-                secondary: '#059669',
-                giColor: '#065f46',
-                bandColor: '#a7f3d0',
-                skin: '#f1c27d',
-                icon: '🌪️',
-                stats: { atk: 3, spd: 5, pwr: 4 },
-                speed: 6.2,
-                jumpForce: -15.5,
-                projSpeed: 11.5,
-                projColor: '#34d399'
+                id: 'titan', name: 'TITAN', gender: 'male', element: 'Roca Sísmica',
+                powerName: 'Meteoro Telúrico', superName: 'Cataclismo Pétreo', homeArena: 'lab',
+                primary: '#d97706', secondary: '#78350f', giColor: '#78350f', bandColor: '#fbbf24', skin: '#c68642', icon: '🪨',
+                accessory: 'spikes', stats: { atk: 5, spd: 3, pwr: 5 }, speed: 4.5, jumpForce: -13.6, projSpeed: 8.8, projColor: '#f59e0b'
             },
             {
-                id: 'venom',
-                name: 'VENOM-STYLE',
-                element: 'Ácido Venenoso',
-                powerName: 'Orbe Corrosivo',
-                superName: 'Lluvia Tóxica',
-                primary: '#a3e635',
-                secondary: '#4d7c0f',
-                giColor: '#365314',
-                bandColor: '#bef264',
-                skin: '#d9f99d',
-                icon: '☣️',
-                stats: { atk: 4, spd: 4, pwr: 5 },
-                speed: 5.2,
-                jumpForce: -14.2,
-                projSpeed: 9.6,
-                projColor: '#a3e635'
+                id: 'viper', name: 'VIPER', gender: 'female', element: 'Ácido Venenoso',
+                powerName: 'Orbe Corrosivo', superName: 'Lluvia Tóxica', homeArena: 'toxic',
+                primary: '#a3e635', secondary: '#4d7c0f', giColor: '#365314', bandColor: '#bef264', skin: '#d9f99d', icon: '☣️',
+                accessory: 'toxicGlow', stats: { atk: 4, spd: 4, pwr: 5 }, speed: 5.3, jumpForce: -14.4, projSpeed: 9.6, projColor: '#a3e635'
             }
         ];
 
         const BOT_NAMES = ['UNIT_ALPHA', 'BOT_BETA', 'CYBER_01', 'MECHA_X', 'NEXUS_BOT', 'GRID_AI', 'PULSE_99', 'CORE_BOT'];
 
         // =========================================================================
-        // 2. MOTOR DE AUDIO SINTETIZADO
+        // 3. MOTOR AUDIO SINTETIZADO CON TEMAS CHIPTUNE POR MAPA Y LOBBY
         // =========================================================================
         class ArcadeSoundEngine {
             constructor() {
                 this.enabled = true;
                 this.ctx = null;
+                this.lobbyMusicInterval = null;
+                this.arenaMusicInterval = null;
+                this.currentArenaId = null;
+                this.lobbyMusicStep = 0;
+                this.arenaMusicStep = 0;
             }
+
             init() {
                 if (!this.ctx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -672,10 +604,20 @@
                     this.ctx.resume();
                 }
             }
+
             toggle() {
                 this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopLobbyMusic();
+                    this.stopAmbientSound();
+                } else if (document.getElementById('screen-game').classList.contains('hidden')) {
+                    this.startLobbyMusic();
+                } else if (this.currentArenaId) {
+                    this.startAmbientSound(this.currentArenaId);
+                }
                 return this.enabled;
             }
+
             playTone(freq, endFreq, duration, type = 'square', gainVal = 0.12) {
                 if (!this.enabled) return;
                 this.init();
@@ -693,6 +635,7 @@
                 osc.start(now);
                 osc.stop(now + duration);
             }
+
             playNoise(duration = 0.15, gainVal = 0.18) {
                 if (!this.enabled) return;
                 this.init();
@@ -710,10 +653,112 @@
                 gain.connect(this.ctx.destination);
                 noise.start();
             }
+
+            // MÚSICA LOBBY CHIPTUNE RETRO
+            startLobbyMusic() {
+                if (!this.enabled || this.lobbyMusicInterval) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const notes = [220, 261.63, 293.66, 329.63, 392, 440, 392, 329.63];
+                const bassNotes = [110, 110, 130.81, 146.83];
+                this.lobbyMusicStep = 0;
+
+                this.lobbyMusicInterval = setInterval(() => {
+                    if (!this.enabled || !this.ctx) return;
+                    const freq = notes[this.lobbyMusicStep % notes.length];
+                    const bass = bassNotes[Math.floor(this.lobbyMusicStep / 2) % bassNotes.length];
+                    this.playTone(freq, freq * 0.98, 0.12, 'square', 0.04);
+                    this.playTone(bass, bass, 0.22, 'triangle', 0.06);
+                    this.lobbyMusicStep++;
+                }, 220);
+            }
+
+            stopLobbyMusic() {
+                if (this.lobbyMusicInterval) {
+                    clearInterval(this.lobbyMusicInterval);
+                    this.lobbyMusicInterval = null;
+                }
+            }
+
+            // MÚSICA DE SINTETIZADOR CHIPTUNE POR MAPA (IGUAL QUE EN EL MENÚ)
+            startAmbientSound(arenaId) {
+                this.currentArenaId = arenaId;
+                this.stopAmbientSound();
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const themes = {
+                    suzaku: {
+                        lead: [293.66, 329.63, 392.00, 440.00, 523.25, 440.00, 392.00, 329.63],
+                        bass: [146.83, 146.83, 196.00, 220.00],
+                        leadWave: 'square', bassWave: 'triangle', tempo: 185
+                    },
+                    volcano: {
+                        lead: [164.81, 196.00, 220.00, 246.94, 220.00, 196.00, 174.61, 164.81],
+                        bass: [82.41, 82.41, 98.00, 110.00],
+                        leadWave: 'sawtooth', bassWave: 'square', tempo: 165
+                    },
+                    eclipse: {
+                        lead: [220.00, 233.08, 277.18, 329.63, 349.23, 329.63, 277.18, 233.08],
+                        bass: [110.00, 116.54, 138.59, 110.00],
+                        leadWave: 'square', bassWave: 'triangle', tempo: 205
+                    },
+                    cyber: {
+                        lead: [329.63, 392.00, 493.88, 659.25, 587.33, 493.88, 392.00, 440.00],
+                        bass: [164.81, 164.81, 196.00, 246.94],
+                        leadWave: 'sawtooth', bassWave: 'triangle', tempo: 160
+                    },
+                    lab: {
+                        lead: [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00],
+                        bass: [130.81, 130.81, 164.81, 196.00],
+                        leadWave: 'square', bassWave: 'triangle', tempo: 175
+                    },
+                    emerald: {
+                        lead: [392.00, 440.00, 523.25, 587.33, 659.25, 587.33, 523.25, 440.00],
+                        bass: [196.00, 196.00, 220.00, 261.63],
+                        leadWave: 'square', bassWave: 'triangle', tempo: 190
+                    },
+                    seismic: {
+                        lead: [146.83, 174.61, 196.00, 220.00, 196.00, 174.61, 164.81, 146.83],
+                        bass: [73.42, 73.42, 87.31, 98.00],
+                        leadWave: 'sawtooth', bassWave: 'triangle', tempo: 175
+                    },
+                    toxic: {
+                        lead: [246.94, 293.66, 311.13, 369.99, 311.13, 293.66, 246.94, 220.00],
+                        bass: [123.47, 123.47, 146.83, 185.00],
+                        leadWave: 'sawtooth', bassWave: 'square', tempo: 170
+                    }
+                };
+
+                const theme = themes[arenaId] || themes.suzaku;
+                this.arenaMusicStep = 0;
+
+                this.arenaMusicInterval = setInterval(() => {
+                    if (!this.enabled || !this.ctx) return;
+                    const freq = theme.lead[this.arenaMusicStep % theme.lead.length];
+                    const bass = theme.bass[Math.floor(this.arenaMusicStep / 2) % theme.bass.length];
+                    this.playTone(freq, freq * 0.98, 0.11, theme.leadWave, 0.035);
+                    this.playTone(bass, bass, 0.20, theme.bassWave, 0.055);
+                    this.arenaMusicStep++;
+                }, theme.tempo);
+            }
+
+            stopAmbientSound() {
+                if (this.arenaMusicInterval) {
+                    clearInterval(this.arenaMusicInterval);
+                    this.arenaMusicInterval = null;
+                }
+            }
+
             sfxSelect() { this.playTone(520, 780, 0.08, 'square', 0.08); }
             sfxPunch() { this.playNoise(0.08, 0.14); this.playTone(180, 60, 0.09, 'triangle', 0.15); }
             sfxKick() { this.playNoise(0.12, 0.18); this.playTone(140, 45, 0.13, 'sawtooth', 0.16); }
+            sfxLauncher() { this.playTone(200, 950, 0.22, 'sawtooth', 0.18); this.playNoise(0.15, 0.2); }
+            sfxJuggleHit() { this.playTone(600, 1100, 0.1, 'square', 0.14); this.playNoise(0.08, 0.15); }
             sfxBlock() { this.playTone(850, 420, 0.09, 'square', 0.1); }
+            sfxGuardBreak() { this.playNoise(0.25, 0.25); this.playTone(150, 40, 0.3, 'sawtooth', 0.2); }
             sfxHadouken() {
                 this.playTone(320, 880, 0.14, 'sawtooth', 0.14);
                 setTimeout(() => this.playTone(640, 190, 0.25, 'sine', 0.16), 70);
@@ -739,7 +784,7 @@
         const sfx = new ArcadeSoundEngine();
 
         // =========================================================================
-        // 3. GESTIÓN DE SALAS (PEERJS P2P)
+        // 4. GESTIÓN DE SALAS MULTIJUGADOR P2P
         // =========================================================================
         class RoomNetworkManager {
             constructor() {
@@ -758,7 +803,7 @@
             async init() {
                 if (typeof Peer === 'undefined') {
                     this.updateBadge('● PEERJS NO DISPONIBLE', 'red');
-                    throw new Error('No se pudo cargar PeerJS. Recarga la página e inténtalo de nuevo.');
+                    throw new Error('No se cargó PeerJS.');
                 }
                 this.updateBadge('● PEERJS LISTO', 'sky');
             }
@@ -774,26 +819,18 @@
                         : 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40';
             }
 
-            hostPeerId(code) {
-                return `battle-arena-8-${code.toLowerCase()}`;
-            }
+            hostPeerId(code) { return `street-brawl-8-${code.toLowerCase()}`; }
 
             waitForPeerOpen(peer) {
                 return new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('Tiempo agotado al conectar con PeerJS.')), 15000);
+                    const timeout = setTimeout(() => reject(new Error('Tiempo agotado PeerJS.')), 15000);
                     const cleanup = () => {
                         clearTimeout(timeout);
                         peer.off('open', onOpen);
                         peer.off('error', onError);
                     };
-                    const onOpen = id => {
-                        cleanup();
-                        resolve(id);
-                    };
-                    const onError = err => {
-                        cleanup();
-                        reject(err);
-                    };
+                    const onOpen = id => { cleanup(); resolve(id); };
+                    const onError = err => { cleanup(); reject(err); };
                     peer.on('open', onOpen);
                     peer.on('error', onError);
                 });
@@ -821,16 +858,14 @@
                     this.connections.delete(conn.peer);
                     const room = this.currentRoomCode && this.localRooms[this.currentRoomCode];
                     if (room && room.hostId === this.userId) {
-                        const previousLength = room.slots.length;
-                        room.slots = room.slots.filter(slot => slot.id !== conn.peer);
-                        if (room.slots.length !== previousLength) this.saveRoomState(room);
+                        const prev = room.slots.length;
+                        room.slots = room.slots.filter(s => s.id !== conn.peer);
+                        if (room.slots.length !== prev) this.saveRoomState(room);
                     }
                 });
-
-                conn.on('error', err => console.warn('PeerJS connection error:', err));
             }
 
-            async createRoom(playerProfile, arena = 'suzaku') {
+            async createRoom(playerProfile, arena = 'suzaku', difficulty = 'normal', timerMode = '99') {
                 let code;
                 let peer;
                 let opened = false;
@@ -843,11 +878,10 @@
                         opened = true;
                     } catch (err) {
                         peer.destroy();
-                        if (err.type !== 'unavailable-id') throw new Error('No se pudo crear la sala. Inténtalo nuevamente.');
                     }
                 }
 
-                if (!opened) throw new Error('No se pudo reservar un código de sala. Inténtalo nuevamente.');
+                if (!opened) throw new Error('No se pudo crear la sala. Inténtalo de nuevo.');
 
                 this.peer = peer;
                 this.userId = peer.id;
@@ -859,13 +893,14 @@
                     name: playerProfile.name,
                     archetypeId: playerProfile.archetypeId,
                     isBot: false,
-                    isHost: true,
-                    ready: true
+                    isHost: true
                 };
                 const roomData = {
                     code,
                     hostId: this.userId,
                     arena,
+                    difficulty,
+                    timerMode,
                     status: 'lobby',
                     slots: [hostSlot],
                     updatedAt: Date.now()
@@ -876,35 +911,20 @@
                     this.connections.set(conn.peer, conn);
                     this.createPeerConnectionHandlers(conn);
                 });
-                peer.on('disconnected', () => {
-                    this.updateBadge('● RECONECTANDO...', 'red');
-                    peer.reconnect();
-                });
-                peer.on('error', err => {
-                    console.warn('PeerJS host error:', err);
-                    showToast('Problema de conexión PeerJS: ' + (err.message || err.type), 'error');
-                });
 
-                this.updateBadge('● SALA P2P CREADA', 'emerald');
+                this.updateBadge('● SALA CREADA', 'emerald');
                 return roomData;
             }
 
             async joinRoom(code, playerProfile) {
                 const cleanCode = code.trim().toUpperCase();
-                if (cleanCode.length !== 5) throw new Error('El código de sala debe tener 5 caracteres.');
+                if (cleanCode.length !== 5) throw new Error('El código debe tener 5 caracteres.');
 
                 this.leaveRoom();
                 const peer = new Peer();
                 this.peer = peer;
 
-                try {
-                    this.userId = await this.waitForPeerOpen(peer);
-                } catch (err) {
-                    peer.destroy();
-                    this.peer = null;
-                    throw new Error('No se pudo iniciar la conexión P2P. Comprueba tu Internet e inténtalo otra vez.');
-                }
-
+                this.userId = await this.waitForPeerOpen(peer);
                 this.currentRoomCode = cleanCode;
                 const conn = peer.connect(this.hostPeerId(cleanCode), { reliable: true });
                 this.hostConnection = conn;
@@ -915,16 +935,8 @@
                         if (settled) return;
                         settled = true;
                         this.leaveRoom();
-                        reject(new Error(`No se encontró la sala "${cleanCode}". Verifica el código y que el anfitrión siga conectado.`));
+                        reject(new Error(`No se encontró la sala "${cleanCode}".`));
                     }, 15000);
-
-                    const fail = message => {
-                        if (settled) return;
-                        settled = true;
-                        clearTimeout(timeout);
-                        this.leaveRoom();
-                        reject(new Error(message));
-                    };
 
                     conn.on('open', () => {
                         this.createGuestConnectionHandlers(conn, room => {
@@ -934,7 +946,13 @@
                             this.localRooms[cleanCode] = room;
                             this.updateBadge('● CONECTADO P2P', 'emerald');
                             resolve(room);
-                        }, fail);
+                        }, msg => {
+                            if (settled) return;
+                            settled = true;
+                            clearTimeout(timeout);
+                            this.leaveRoom();
+                            reject(new Error(msg));
+                        });
                         conn.send({
                             type: 'JOIN_ROOM',
                             player: {
@@ -942,20 +960,9 @@
                                 name: playerProfile.name,
                                 archetypeId: playerProfile.archetypeId,
                                 isBot: false,
-                                isHost: false,
-                                ready: true
+                                isHost: false
                             }
                         });
-                    });
-
-                    conn.on('error', () => fail('No se pudo conectar con esa sala. Verifica el código y que el anfitrión siga conectado.'));
-                    conn.on('close', () => {
-                        if (!settled) fail('El anfitrión cerró la sala o se perdió la conexión.');
-                        else if (this.currentRoomCode) {
-                            this.currentRoomCode = null;
-                            showToast('Se perdió la conexión con el anfitrión.', 'error');
-                            if (this.onRoomClosed) this.onRoomClosed();
-                        }
                     });
                 });
             }
@@ -970,7 +977,7 @@
                         this.localRooms[message.room.code] = message.room;
                         if (this.onRoomUpdated) this.onRoomUpdated(message.room);
                     } else if (message.type === 'ROOM_ERROR') {
-                        onError(message.message || 'No se pudo entrar a la sala.');
+                        onError(message.message || 'No se pudo entrar.');
                     } else if (message.type === 'ROOM_CLOSED') {
                         this.currentRoomCode = null;
                         showToast('El anfitrión cerró la sala.', 'warn');
@@ -991,17 +998,14 @@
                     return;
                 }
 
-                const slot = { ...guestSlot, id: conn.peer, isBot: false, isHost: false, ready: true };
-                const existingIdx = room.slots.findIndex(s => s.id === conn.peer);
-                if (existingIdx >= 0) {
-                    room.slots[existingIdx] = slot;
-                } else if (room.slots.length < 8) {
+                const slot = { ...guestSlot, id: conn.peer, isBot: false, isHost: false };
+                if (room.slots.length < 8) {
                     room.slots.push(slot);
                 } else {
                     const botIdx = room.slots.findIndex(s => s.isBot);
                     if (botIdx >= 0) room.slots[botIdx] = slot;
                     else {
-                        conn.send({ type: 'ROOM_ERROR', message: 'La sala está llena (8/8 jugadores).' });
+                        conn.send({ type: 'ROOM_ERROR', message: 'La sala está llena (8/8).' });
                         conn.close();
                         return;
                     }
@@ -1060,9 +1064,7 @@
                     this.hostConnection.close();
                 }
 
-                const isHost = this.peer && this.currentRoomCode &&
-                    this.peer.id === this.hostPeerId(this.currentRoomCode);
-                if (isHost) {
+                if (this.peer && this.currentRoomCode && this.peer.id === this.hostPeerId(this.currentRoomCode)) {
                     this.connections.forEach(conn => {
                         if (conn.open) conn.send({ type: 'ROOM_CLOSED' });
                     });
@@ -1080,7 +1082,7 @@
         const net = new RoomNetworkManager();
 
         // =========================================================================
-        // 4. ESTADO DE INTERFAZ Y AJUSTES
+        // 5. ESTADO GLOBAL E INTERFAZ
         // =========================================================================
         const state = {
             playerName: 'BRAWLER_1',
@@ -1113,6 +1115,13 @@
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(`screen-${screenName}`).classList.remove('hidden');
+
+            if (screenName === 'menu' || screenName === 'lobby') {
+                sfx.stopAmbientSound();
+                sfx.startLobbyMusic();
+            } else {
+                sfx.stopLobbyMusic();
+            }
         }
 
         function renderFighterGrid() {
@@ -1128,7 +1137,7 @@
                         ${f.icon}
                     </div>
                     <div class="font-bold text-xs text-white tracking-tight truncate w-full">${f.name}</div>
-                    <div class="text-[10px] font-semibold truncate w-full" style="color: ${f.primary}">${f.element}</div>
+                    <div class="text-[9px] font-bold px-1 rounded ${f.gender === 'female' ? 'bg-pink-500/20 text-pink-300' : 'bg-sky-500/20 text-sky-300'}">${f.gender === 'female' ? '♀ MUJER' : '♂ HOMBRE'}</div>
                 `;
                 card.onclick = () => {
                     sfx.sfxSelect();
@@ -1147,14 +1156,13 @@
             avatar.textContent = f.icon;
             avatar.style.background = `linear-gradient(135deg, ${f.primary}, ${f.secondary})`;
             document.getElementById('detail-name').textContent = f.name;
-            document.getElementById('detail-power').textContent = `Poder: ${f.powerName} • Súper: ${f.superName}`;
+            document.getElementById('detail-power').textContent = `Poder: ${f.powerName} • Launcher: ↑ + Puño Medio`;
             document.getElementById('stat-atk').textContent = '★'.repeat(f.stats.atk) + '☆'.repeat(5 - f.stats.atk);
             document.getElementById('stat-spd').textContent = '★'.repeat(f.stats.spd) + '☆'.repeat(5 - f.stats.spd);
             document.getElementById('stat-pwr').textContent = '★'.repeat(f.stats.pwr) + '☆'.repeat(5 - f.stats.pwr);
         }
 
         function renderSettingsUI() {
-            // Render Gamepad Binds
             const gpContainer = document.getElementById('gamepad-binds-container');
             gpContainer.innerHTML = '';
             const gpActions = ['punchWeak', 'punchMedium', 'punchStrong', 'kickWeak', 'kickMedium', 'kickStrong', 'super', 'block'];
@@ -1174,7 +1182,6 @@
                 gpContainer.appendChild(row);
             });
 
-            // Render Keyboard Binds
             const kbContainer = document.getElementById('keyboard-binds-container');
             kbContainer.innerHTML = '';
             const kbActions = ['up', 'down', 'left', 'right', 'punchWeak', 'punchMedium', 'kickWeak', 'kickMedium', 'block', 'super'];
@@ -1213,14 +1220,12 @@
             });
         }
 
-        // Bucle para escuchar pulsaciones de Gamepad en la pantalla de ajustes
         function pollGamepadRebind() {
             if (activeRebindType === 'gamepad' && activeRebindAction) {
                 const pads = navigator.getGamepads ? navigator.getGamepads() : [];
                 for (const pad of pads) {
                     if (pad && pad.connected) {
                         for (let i = 0; i < pad.buttons.length; i++) {
-                            // No permitir asignar la cruceta (12,13,14,15) si es para ataque
                             if (pad.buttons[i].pressed) {
                                 currentGamepadBinds[activeRebindAction] = i;
                                 sfx.sfxSelect();
@@ -1238,7 +1243,6 @@
         }
         requestAnimationFrame(pollGamepadRebind);
 
-        // Escuchar teclas para rebind de teclado
         window.addEventListener('keydown', (e) => {
             if (activeRebindType === 'keyboard' && activeRebindAction) {
                 e.preventDefault();
@@ -1257,11 +1261,15 @@
             state.currentRoom = room;
             document.getElementById('lobby-room-code').textContent = room.code;
             document.getElementById('lobby-count').textContent = `${room.slots.length}/8`;
-            document.getElementById('select-arena').value = room.arena || 'suzaku';
+            document.getElementById('select-arena').value = room.arena || 'random';
+            document.getElementById('select-difficulty').value = room.difficulty || 'normal';
+            document.getElementById('select-timer-mode').value = room.timerMode || '99';
 
             const isHost = room.hostId === net.userId;
             document.getElementById('host-controls').style.display = isHost ? 'flex' : 'none';
             document.getElementById('select-arena').disabled = !isHost;
+            document.getElementById('select-difficulty').disabled = !isHost;
+            document.getElementById('select-timer-mode').disabled = !isHost;
 
             const grid = document.getElementById('lobby-slots-grid');
             grid.innerHTML = '';
@@ -1285,8 +1293,8 @@
                                 </div>
                                 <div class="text-[11px] font-semibold truncate" style="color:${arch.primary}">${arch.name}</div>
                                 <div class="mt-0.5 flex gap-1">
-                                    ${slot.isHost ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-yellow-500/20 text-yellow-300 font-bold">ANFITRIÓN</span>' : ''}
-                                    ${slot.isBot ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">BOT IA</span>' : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">JUGADOR</span>'}
+                                    ${slot.isHost ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-yellow-500/20 text-yellow-300 font-bold">HOST</span>' : ''}
+                                    ${slot.isBot ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">BOT IA</span>' : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">PLAYER</span>'}
                                 </div>
                             </div>
                         </div>
@@ -1312,14 +1320,13 @@
             if (isHost) {
                 startBtn.disabled = room.slots.length < 2;
                 document.getElementById('lobby-status-msg').textContent = room.slots.length < 2
-                    ? 'Añade al menos 1 Bot IA o espera a otro jugador para iniciar.'
-                    : `¡Todo listo! ${room.slots.length} luchadores entrarán a la arena.`;
+                    ? 'Añade al menos 1 Bot IA o espera a otro jugador.'
+                    : `¡Todo listo! ${room.slots.length} luchadores en la arena.`;
             } else {
                 startBtn.disabled = true;
                 startBtn.textContent = 'ESPERANDO AL ANFITRIÓN...';
                 document.getElementById('lobby-status-msg').textContent = 'El anfitrión iniciará el combate pronto.';
             }
-
         }
 
         function addBotToRoom() {
@@ -1336,15 +1343,14 @@
                 name: botName,
                 archetypeId: chosenArch.id,
                 isBot: true,
-                isHost: false,
-                ready: true
+                isHost: false
             });
             sfx.sfxSelect();
             net.saveRoomState(room);
         }
 
         // =========================================================================
-        // 5. MOTOR DE COMBATE (BOTS CON RITMO MÁS LENTO Y TÁCTICO)
+        // 6. MOTOR DE COMBATE (TEKKEN JUGGLE COMBOS & BLOQUEO DIRECCIONAL)
         // =========================================================================
         class BattleArenaEngine {
             constructor(canvas, room, localUserId) {
@@ -1354,9 +1360,20 @@
                 this.localUserId = localUserId;
                 this.isHost = room.hostId === localUserId;
 
+                // Resolución del mundo
                 this.worldWidth = 1750;
                 this.worldHeight = 720;
                 this.groundY = 615;
+
+                // Selección de Escenario (Random o Específico)
+                let selectedArenaKey = room.arena || 'random';
+                if (selectedArenaKey === 'random') {
+                    const keys = Object.keys(ARENAS);
+                    selectedArenaKey = keys[Math.floor(Math.random() * keys.length)];
+                }
+                this.arena = ARENAS[selectedArenaKey] || ARENAS.suzaku;
+                this.difficulty = room.difficulty || 'normal';
+                this.timerMode = room.timerMode || '99';
 
                 this.platforms = [
                     { x: 260, y: 455, w: 320, h: 18 },
@@ -1375,7 +1392,7 @@
 
                 this.camera = { x: this.worldWidth / 2, y: this.worldHeight / 2, zoom: 1, shake: 0 };
                 this.hitStopFrames = 0;
-                this.timer = 99;
+                this.timer = this.timerMode === 'infinite' ? 999 : 99;
                 this.timerAccum = 0;
                 this.matchState = 'intro';
                 this.running = false;
@@ -1386,6 +1403,8 @@
                 this.buildHUD();
                 this.bindInputs();
                 this.resize();
+
+                sfx.startAmbientSound(this.arena.id);
             }
 
             initFighters() {
@@ -1410,12 +1429,13 @@
                         facing: idx < count / 2 ? 1 : -1,
                         hp: 1000,
                         maxHp: 1000,
-                        mp: 30,
+                        mp: 15,
                         maxMp: 100,
                         alive: true,
                         onGround: true,
-                        jumpHoldFrames: 0,
-                        jumpCutApplied: false,
+                        isJumping: false,
+                        inJuggle: false, // Estado Juggle Tekken
+                        stunTimer: 0,    // Stun por rompeguardias
                         crouching: false,
                         blocking: false,
                         state: 'idle',
@@ -1428,7 +1448,7 @@
                         kos: 0,
                         damageDealt: 0,
                         animFrame: 0,
-                        aiTimer: 35 + Math.random() * 40,
+                        aiTimer: 20 + Math.random() * 30,
                         aiDecision: 'approach'
                     };
                 });
@@ -1436,6 +1456,7 @@
 
             buildHUD() {
                 document.getElementById('hud-room-code').textContent = `SALA: ${this.room.code}`;
+                document.getElementById('hud-arena-name').textContent = `${this.arena.icon} ${this.arena.name.toUpperCase()}`;
                 const grid = document.getElementById('hud-players-grid');
                 grid.innerHTML = '';
 
@@ -1455,7 +1476,7 @@
                             <div id="hud-hp-${f.id}" class="h-full transition-all duration-100" style="width: 100%; background: linear-gradient(90deg, #ef4444, #facc15, #22c55e);"></div>
                         </div>
                         <div class="w-full h-1.5 bg-slate-950 rounded-sm overflow-hidden">
-                            <div id="hud-mp-${f.id}" class="h-full transition-all duration-100" style="width: 30%; background-color: ${f.archetype.primary};"></div>
+                            <div id="hud-mp-${f.id}" class="h-full transition-all duration-100" style="width: 15%; background-color: ${f.archetype.primary};"></div>
                         </div>
                     `;
                     grid.appendChild(card);
@@ -1482,7 +1503,7 @@
                     }
                 });
                 document.getElementById('hud-alive-count').textContent = `VIVOS: ${aliveCount}/${this.fighters.length}`;
-                document.getElementById('hud-timer').textContent = String(Math.ceil(this.timer)).padStart(2, '0');
+                document.getElementById('hud-timer').textContent = this.timerMode === 'infinite' ? '∞' : String(Math.ceil(this.timer)).padStart(2, '0');
             }
 
             bindInputs() {
@@ -1502,7 +1523,7 @@
                 this._onGamepadConnected = (e) => {
                     this.gamepadIndex = e.gamepad.index;
                     this.gamepadConnected = true;
-                    if (typeof showToast === 'function') showToast('Mando conectado: ' + (e.gamepad.id || 'Xbox'));
+                    showToast('Mando Xbox detectado: ' + (e.gamepad.id || 'Mando'));
                 };
                 this._onGamepadDisconnected = (e) => {
                     if (this.gamepadIndex === e.gamepad.index) {
@@ -1522,6 +1543,7 @@
 
             destroy() {
                 this.running = false;
+                sfx.stopAmbientSound();
                 window.removeEventListener('keydown', this._onKeyDown);
                 window.removeEventListener('keyup', this._onKeyUp);
                 window.removeEventListener('gamepadconnected', this._onGamepadConnected);
@@ -1547,7 +1569,7 @@
             start() {
                 this.running = true;
                 this.matchState = 'intro';
-                this.showBanner('ROUND 1', 1100);
+                this.showBanner(`ROUND 1 • ${this.arena.name.toUpperCase()}`, 1100);
                 setTimeout(() => {
                     if (!this.running) return;
                     this.showBanner('¡FIGHT!', 850);
@@ -1581,22 +1603,18 @@
                 const axisY = pad && pad.axes.length > 1 ? pad.axes[1] : 0;
                 const deadZone = 0.28;
 
-                // Mando: Dirección ÚNICAMENTE desde cruceta o stick (NO desde botón A)
                 const gpLeft = !!pad && (button(14) || axisX < -deadZone);
                 const gpRight = !!pad && (button(15) || axisX > deadZone);
                 const gpUp = !!pad && (button(12) || axisY < -deadZone);
                 const gpDown = !!pad && (button(13) || axisY > deadZone);
 
-                // Comprobar si hay una dirección presionada para combinar con B para poder especial
                 const hasDirection = gpLeft || gpRight || gpUp || gpDown;
 
-                // Teclado configurable
                 const isKbKey = (action) => {
                     const list = currentKeyboardBinds[action] || [];
                     return list.some(k => !!this.keys[k]);
                 };
 
-                // Comprobar botones de mando reconfigurados
                 const isGpBtn = (action) => {
                     const btnIdx = currentGamepadBinds[action];
                     return btnIdx !== undefined && button(btnIdx);
@@ -1604,22 +1622,23 @@
 
                 const punchW = isKbKey('punchWeak') || isGpBtn('punchWeak');
                 const punchM = isKbKey('punchMedium') || isGpBtn('punchMedium');
-                const punchS = isGpBtn('punchStrong');
+                const punchS = isKbKey('punchStrong');
 
                 const kickW = isKbKey('kickWeak') || isGpBtn('kickWeak');
                 const kickM = isKbKey('kickMedium') || isGpBtn('kickMedium');
-                const kickS = isGpBtn('kickStrong');
+                const kickS = isKbKey('kickStrong');
 
-                const isBPress = button(1); // Botón B por defecto o asignado a Patada Media
-                const specialTriggered = (isBPress && hasDirection) || isKbKey('special');
+                const upHeld = isKbKey('up') || gpUp;
+                const specialTriggered = (button(1) && hasDirection) || isKbKey('special');
 
                 return {
                     left: isKbKey('left') || gpLeft,
                     right: isKbKey('right') || gpRight,
-                    up: isKbKey('up') || gpUp,
-                    jumpHeld: isKbKey('up') || gpUp,
+                    up: upHeld,
                     down: isKbKey('down') || gpDown,
-                    punch: punchW || punchM || punchS,
+                    punch: punchW || punchS,
+                    punchLauncher: punchM && upHeld, // ↑ + Puño Medio = LAUNCHER TEKKEN
+                    punchMedium: punchM && !upHeld,
                     kick: (kickW || kickM || kickS) && !specialTriggered,
                     block: isKbKey('block') || isGpBtn('block'),
                     special: specialTriggered,
@@ -1628,7 +1647,7 @@
             }
 
             computeBotInput(bot) {
-                const input = { left: false, right: false, up: false, jumpHeld: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
+                const input = { left: false, right: false, up: false, down: false, punch: false, punchLauncher: false, punchMedium: false, kick: false, block: false, special: false, super: false };
                 let nearest = null;
                 let minDist = Infinity;
                 for (const other of this.fighters) {
@@ -1642,29 +1661,40 @@
                 if (!nearest) return input;
 
                 const dx = nearest.x - bot.x;
-                const dy = nearest.y - bot.y;
                 const absDx = Math.abs(dx);
 
-                const incomingProj = this.projectiles.find(p => p.ownerId !== bot.id && Math.abs(p.x - bot.x) < 180 && Math.abs(p.y - (bot.y - 50)) < 65);
-                if (incomingProj) {
-                    if (Math.random() < 0.4) input.up = true;
-                    else input.block = true;
-                    return input;
-                }
+                // DIFICULTAD IA
+                const isHardcore = this.difficulty === 'hardcore';
+                const isEasy = this.difficulty === 'easy';
+                const reactionMult = isHardcore ? 0.4 : (isEasy ? 1.8 : 1.0);
 
                 bot.aiTimer--;
                 if (bot.aiTimer <= 0) {
-                    bot.aiTimer = 35 + Math.floor(Math.random() * 45);
+                    bot.aiTimer = Math.floor((30 + Math.random() * 35) * reactionMult);
                     const roll = Math.random();
-                    if (bot.mp >= 100 && absDx < 500 && roll < 0.5) bot.aiDecision = 'super';
-                    else if (absDx < 105) bot.aiDecision = roll < 0.35 ? 'punch' : (roll < 0.7 ? 'kick' : 'block');
-                    else if (absDx < 450 && roll < 0.3) bot.aiDecision = 'special';
-                    else bot.aiDecision = 'approach';
+
+                    if (isHardcore && nearest.inJuggle && absDx < 90) {
+                        bot.aiDecision = 'punch'; // Combo Juggle agresivo
+                    } else if (bot.mp >= 100 && absDx < 450 && roll < (isHardcore ? 0.75 : 0.4)) {
+                        bot.aiDecision = 'super';
+                    } else if (absDx < 85) {
+                        if (isHardcore && roll < 0.45) bot.aiDecision = 'launcher';
+                        else bot.aiDecision = roll < 0.35 ? 'punch' : (roll < 0.7 ? 'kick' : 'block');
+                    } else if (absDx < 400 && roll < 0.35) {
+                        bot.aiDecision = 'special';
+                    } else {
+                        bot.aiDecision = 'approach';
+                    }
                 }
 
                 if (bot.aiDecision === 'approach') {
                     if (dx > 70) input.right = true;
                     else if (dx < -70) input.left = true;
+                } else if (bot.aiDecision === 'launcher') {
+                    bot.facing = dx >= 0 ? 1 : -1;
+                    input.up = true;
+                    input.punchLauncher = true;
+                    bot.aiDecision = 'approach';
                 } else if (bot.aiDecision === 'punch') {
                     bot.facing = dx >= 0 ? 1 : -1;
                     input.punch = true;
@@ -1682,6 +1712,7 @@
                     input.super = true;
                     bot.aiDecision = 'approach';
                 } else if (bot.aiDecision === 'block') {
+                    bot.facing = dx >= 0 ? 1 : -1;
                     input.block = true;
                 }
 
@@ -1699,7 +1730,7 @@
                     net.sendClientInput(this.getLocalInputMap());
                 }
 
-                if (this.matchState === 'fighting') {
+                if (this.matchState === 'fighting' && this.timerMode !== 'infinite') {
                     this.timerAccum += dt;
                     if (this.timerAccum >= 1) {
                         this.timerAccum -= 1;
@@ -1716,6 +1747,7 @@
                         f.comboTimer--;
                         if (f.comboTimer === 0) f.comboCount = 0;
                     }
+                    if (f.stunTimer > 0) f.stunTimer--;
                     if (f.attackCooldown > 0) f.attackCooldown--;
 
                     if (!f.alive) {
@@ -1724,7 +1756,7 @@
                         continue;
                     }
 
-                    let input = { left: false, right: false, up: false, jumpHeld: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
+                    let input = { left: false, right: false, up: false, down: false, punch: false, punchLauncher: false, punchMedium: false, kick: false, block: false, special: false, super: false };
                     if (this.matchState === 'fighting') {
                         if (f.id === this.localUserId) {
                             input = this.getLocalInputMap();
@@ -1766,7 +1798,7 @@
                     }
                 }
 
-                const canAct = !['hurt', 'punch', 'kick', 'special', 'super'].includes(f.state);
+                const canAct = !['hurt', 'stun', 'punch', 'launcher', 'kick', 'special', 'super'].includes(f.state) && f.stunTimer === 0;
 
                 f.blocking = canAct && input.block && f.onGround;
                 f.crouching = canAct && input.down && f.onGround && !f.blocking;
@@ -1786,33 +1818,32 @@
                         if (f.onGround && f.state === 'walk') f.state = 'idle';
                     }
 
-                    if (input.up && f.onGround) {
-                        f.vy = arch.jumpForce;
+                    // INICIO DE SALTO (Full Jump si se mantiene presionado)
+                    if (input.up && f.onGround && !input.punchLauncher) {
+                        f.vy = arch.jumpForce * 1.15;
                         f.onGround = false;
-                        f.jumpHoldFrames = 0;
-                        f.jumpCutApplied = false;
+                        f.isJumping = true;
                         f.state = 'jump';
                         this.spawnDust(f.x, f.y, 6);
                     }
-                    if (!f.onGround && f.vy < 0) {
-                        if (input.jumpHeld && f.jumpHoldFrames < 18) {
-                            f.vy -= 0.28;
-                            f.jumpHoldFrames++;
-                        } else if (!input.jumpHeld && !f.jumpCutApplied && f.vy < -4) {
-                            f.vy *= 0.58;
-                            f.jumpCutApplied = true;
-                        }
-                    }
                 } else {
-                    f.vx *= 0.8;
+                    f.vx = 0;
+                }
+
+                // CORTE DE SALTO SI SE SUELTA EL BOTÓN ANTES DE LLEGAR ARRIBA
+                if (f.isJumping && !input.up && f.vy < -4.5) {
+                    f.vy *= 0.52;
+                    f.isJumping = false;
                 }
 
                 if (canAct && !f.blocking && f.attackCooldown === 0) {
                     if (input.super && f.mp >= 100) {
                         this.triggerSuperAttack(f);
-                    } else if (input.special && f.mp >= 20) {
+                    } else if (input.special && f.mp >= 25) {
                         this.triggerSpecialProjectile(f);
-                    } else if (input.punch) {
+                    } else if (input.punchLauncher) {
+                        this.triggerLauncherAttack(f);
+                    } else if (input.punch || input.punchMedium) {
                         this.triggerMeleeAttack(f, 'punch');
                     } else if (input.kick) {
                         this.triggerMeleeAttack(f, 'kick');
@@ -1825,7 +1856,10 @@
 
                 const prevY = f.y;
                 f.x += f.vx;
-                f.vy += 0.72;
+
+                // GRAVIDAD REDUCIDA EN JUGGLE (TEKKEN JUGGLE PHYSICS)
+                const currentGravity = f.inJuggle ? 0.38 : 0.72;
+                f.vy += currentGravity;
                 f.y += f.vy;
 
                 f.x = Math.max(55, Math.min(this.worldWidth - 55, f.x));
@@ -1850,31 +1884,45 @@
                     landed = true;
                 }
 
-                if (landed && !f.onGround) {
-                    this.spawnDust(f.x, f.y, 5);
-                    if (f.state === 'jump') f.state = 'idle';
+                if (landed) {
+                    f.isJumping = false;
+                    if (f.inJuggle) f.inJuggle = false;
+                    if (!f.onGround) {
+                        this.spawnDust(f.x, f.y, 5);
+                        if (f.state === 'jump') f.state = 'idle';
+                    }
                 }
                 f.onGround = landed;
 
-                f.mp = Math.min(f.maxMp, f.mp + 0.04);
+                // Regeneración pasiva táctica de MP
+                f.mp = Math.min(f.maxMp, f.mp + 0.015);
+            }
+
+            triggerLauncherAttack(f) {
+                f.state = 'launcher';
+                f.stateTimer = 22;
+                f.attackCooldown = 32;
+                f.hitBoxActive = true;
+                f.hasHitThisSwing = false;
+                sfx.sfxLauncher();
+                this.addFloatingText(f.x, f.y - 120, '¡LAUNCHER!', '#facc15', 18);
             }
 
             triggerMeleeAttack(f, type) {
                 f.state = type;
-                f.stateTimer = type === 'punch' ? 14 : 20;
-                f.attackCooldown = type === 'punch' ? 18 : 26;
+                f.stateTimer = type === 'punch' ? 18 : 26;
+                f.attackCooldown = type === 'punch' ? 24 : 35;
                 f.hitBoxActive = true;
                 f.hasHitThisSwing = false;
-                f.vx = f.facing * (type === 'punch' ? 2.5 : 4.2);
                 if (type === 'punch') sfx.sfxPunch();
                 else sfx.sfxKick();
             }
 
             triggerSpecialProjectile(f) {
-                f.mp -= 20;
+                f.mp -= 25;
                 f.state = 'special';
-                f.stateTimer = 20;
-                f.attackCooldown = 28;
+                f.stateTimer = 22;
+                f.attackCooldown = 38;
                 sfx.sfxHadouken();
 
                 const arch = f.archetype;
@@ -1886,10 +1934,9 @@
                     y: f.y - 58,
                     vx: f.facing * arch.projSpeed,
                     radius: 22,
-                    damage: 95,
+                    damage: 90,
                     isSuper: false,
                     color: arch.projColor,
-                    secondary: arch.secondary,
                     life: 130
                 });
                 this.spawnBurst(f.x + f.facing * 45, f.y - 58, arch.projColor, 12);
@@ -1898,10 +1945,10 @@
             triggerSuperAttack(f) {
                 f.mp = 0;
                 f.state = 'super';
-                f.stateTimer = 28;
-                f.attackCooldown = 40;
-                this.hitStopFrames = 6;
-                this.camera.shake = 14;
+                f.stateTimer = 32;
+                f.attackCooldown = 50;
+                this.hitStopFrames = 8;
+                this.camera.shake = 16;
                 sfx.sfxSuper();
 
                 const arch = f.archetype;
@@ -1918,15 +1965,15 @@
                     damage: 230,
                     isSuper: true,
                     color: arch.projColor,
-                    secondary: '#ffffff',
                     life: 150
                 });
                 this.spawnBurst(f.x + f.facing * 50, f.y - 60, '#facc15', 25);
             }
 
             checkMeleeHits(attacker) {
-                const reach = attacker.state === 'punch' ? 78 : 96;
-                const dmg = attacker.state === 'punch' ? 55 : 85;
+                const isLauncher = attacker.state === 'launcher';
+                const reach = isLauncher ? 82 : (attacker.state === 'punch' ? 78 : 96);
+                const dmg = isLauncher ? 95 : (attacker.state === 'punch' ? 50 : 80);
                 const hitX = attacker.x + attacker.facing * (reach * 0.65);
                 const hitY = attacker.y - 55;
 
@@ -1934,55 +1981,81 @@
                     if (target.id === attacker.id || !target.alive) continue;
                     const dx = Math.abs(target.x - hitX);
                     const dy = Math.abs((target.y - 54) - hitY);
-                    if (dx < reach * 0.65 && dy < 58) {
+                    if (dx < reach * 0.65 && dy < 62) {
                         attacker.hasHitThisSwing = true;
-                        this.applyDamage(attacker, target, dmg, attacker.facing * (attacker.state === 'kick' ? 11 : 6.5));
+
+                        if (isLauncher) {
+                            // APARTADO TEKKEN: LAUNCHER ATACK
+                            target.inJuggle = true;
+                            target.onGround = false;
+                            this.applyDamage(attacker, target, dmg, attacker.facing * 4, -16.5, true);
+                        } else if (target.inJuggle) {
+                            // APARTADO TEKKEN: JUGGLE IN-AIR COMBOS
+                            sfx.sfxJuggleHit();
+                            this.applyDamage(attacker, target, dmg, attacker.facing * 6, -6.5, false);
+                        } else {
+                            this.applyDamage(attacker, target, dmg, attacker.facing * (attacker.state === 'kick' ? 10 : 6), -4.5, false);
+                        }
                         break;
                     }
                 }
             }
 
-            applyDamage(attacker, target, rawDamage, knockbackX) {
+            applyDamage(attacker, target, rawDamage, knockbackX, knockbackY = -4.5, isLauncherHit = false) {
+                // APARTADO: BLOQUEO DIRECCIONAL ESTRICTO
+                // El defensor solo bloquea si mira hacia el lado de donde viene el atacante
+                const isFacingAttacker = (attacker.x > target.x && target.facing === 1) || (attacker.x < target.x && target.facing === -1);
+
                 if (target.blocking) {
-                    const chipDamage = Math.round(rawDamage * 0.18);
-                    target.hp = Math.max(1, target.hp - chipDamage);
-                    target.vx = knockbackX * 0.4;
-                    sfx.sfxBlock();
-                    this.spawnBurst(target.x, target.y - 55, '#38bdf8', 8);
-                    this.addFloatingText(target.x, target.y - 110, '¡BLOQUEO!', '#38bdf8', 14);
-                    return;
+                    if (isFacingAttacker) {
+                        // BLOQUEO EXITOSO FRONTAL
+                        const chipDamage = Math.round(rawDamage * 0.15);
+                        target.hp = Math.max(1, target.hp - chipDamage);
+                        target.vx = knockbackX * 0.4;
+                        sfx.sfxBlock();
+                        this.spawnBurst(target.x, target.y - 55, '#38bdf8', 8);
+                        this.addFloatingText(target.x, target.y - 110, '¡BLOQUEO!', '#38bdf8', 14);
+                        return;
+                    } else {
+                        // RUPTURA DE GUARDIA POR ESPALDA EXPUESTA
+                        sfx.sfxGuardBreak();
+                        target.blocking = false;
+                        target.stunTimer = 35;
+                        target.state = 'stun';
+                        this.addFloatingText(target.x, target.y - 120, '¡ROMPEGUARDIA (ESPALDA)!', '#ef4444', 16);
+                    }
                 }
 
                 target.hp = Math.max(0, target.hp - rawDamage);
                 target.vx = knockbackX;
-                target.vy = -4.5;
-                target.state = 'hurt';
-                target.stateTimer = 14;
-                target.mp = Math.min(target.maxMp, target.mp + 12);
+                target.vy = knockbackY;
+                if (target.state !== 'stun') target.state = 'hurt';
+                target.stateTimer = 16;
 
+                target.mp = Math.min(target.maxMp, target.mp + 8);
                 attacker.damageDealt += rawDamage;
-                attacker.mp = Math.min(attacker.maxMp, attacker.mp + 16);
+                attacker.mp = Math.min(target.maxMp, attacker.mp + 12);
                 attacker.comboCount++;
-                attacker.comboTimer = 95;
+                attacker.comboTimer = 100;
 
-                this.hitStopFrames = 3;
-                this.camera.shake = Math.min(16, 5 + rawDamage * 0.05);
+                this.hitStopFrames = isLauncherHit ? 6 : 3;
+                this.camera.shake = Math.min(18, 5 + rawDamage * 0.06);
                 this.spawnBurst(target.x, target.y - 55, attacker.archetype.primary, 14);
 
                 const comboText = attacker.comboCount > 1 ? ` (COMBO x${attacker.comboCount})` : '';
-                this.addFloatingText(target.x, target.y - 115, `-${rawDamage}${comboText}`, '#facc15', attacker.comboCount > 1 ? 17 : 14);
+                this.addFloatingText(target.x, target.y - 115, `-${rawDamage}${comboText}`, target.inJuggle ? '#c084fc' : '#facc15', attacker.comboCount > 1 ? 17 : 14);
 
                 if (target.hp <= 0 && target.alive) {
                     target.alive = false;
                     target.state = 'ko';
-                    target.vy = -10;
-                    target.vx = knockbackX * 1.4;
+                    target.vy = -11;
+                    target.vx = knockbackX * 1.5;
                     attacker.kos++;
-                    this.camera.shake = 18;
+                    this.camera.shake = 20;
                     this.hitStopFrames = 8;
                     sfx.sfxKO();
-                    this.spawnBurst(target.x, target.y - 50, '#ef4444', 32);
-                    this.addFloatingText(target.x, target.y - 130, '¡K.O.!', '#ef4444', 24);
+                    this.spawnBurst(target.x, target.y - 50, '#ef4444', 35);
+                    this.addFloatingText(target.x, target.y - 130, '¡K.O.!', '#ef4444', 26);
                 }
             }
 
@@ -2014,7 +2087,7 @@
                             sfx.sfxClash();
                             this.camera.shake = 10;
                             this.spawnBurst((p.x + p2.x) / 2, (p.y + p2.y) / 2, '#ffffff', 22);
-                            this.addFloatingText((p.x + p2.x) / 2, p.y - 30, '¡CHOQUE DE PODER!', '#38bdf8', 15);
+                            this.addFloatingText((p.x + p2.x) / 2, p.y - 30, '¡CHOQUE!', '#38bdf8', 15);
                             if (!p.isSuper && p2.isSuper) {
                                 destroyed = true;
                             } else if (p.isSuper && !p2.isSuper) {
@@ -2080,7 +2153,7 @@
                         vx: (Math.random() - 0.5) * 3,
                         vy: -Math.random() * 2,
                         radius: 4 + Math.random() * 4,
-                        color: '#cbd5e1',
+                        color: this.arena.accentColor,
                         alpha: 0.6,
                         decay: 0.04
                     });
@@ -2153,6 +2226,7 @@
 
             openResultsModal(winner) {
                 this.running = false;
+                sfx.stopAmbientSound();
                 document.getElementById('winner-title').textContent = `🏆 ¡GANADOR: ${winner.name}!`;
                 const sorted = [...this.fighters].sort((a, b) => {
                     if (a.alive !== b.alive) return a.alive ? -1 : 1;
@@ -2185,6 +2259,7 @@
                     fighters: this.fighters.map(f => ({
                         id: f.id, x: f.x, y: f.y, vx: f.vx, vy: f.vy,
                         facing: f.facing, hp: f.hp, mp: f.mp, alive: f.alive,
+                        inJuggle: f.inJuggle, stunTimer: f.stunTimer,
                         state: f.state, blocking: f.blocking, crouching: f.crouching,
                         kos: f.kos, damageDealt: f.damageDealt
                     })),
@@ -2233,31 +2308,23 @@
             }
 
             drawArenaBackground(ctx) {
-                const arenaType = this.room.arena || 'suzaku';
+                const a = this.arena;
                 const skyGrad = ctx.createLinearGradient(0, -200, 0, this.groundY);
-                if (arenaType === 'cyber') {
-                    skyGrad.addColorStop(0, '#020617');
-                    skyGrad.addColorStop(0.6, '#1e1b4b');
-                    skyGrad.addColorStop(1, '#311042');
-                } else if (arenaType === 'volcano') {
-                    skyGrad.addColorStop(0, '#180505');
-                    skyGrad.addColorStop(0.6, '#450a0a');
-                    skyGrad.addColorStop(1, '#9a3412');
-                } else {
-                    skyGrad.addColorStop(0, '#090d16');
-                    skyGrad.addColorStop(0.55, '#1e293b');
-                    skyGrad.addColorStop(1, '#4c1d95');
-                }
+                skyGrad.addColorStop(0, a.bgGradient[0]);
+                skyGrad.addColorStop(0.55, a.bgGradient[1]);
+                skyGrad.addColorStop(1, a.bgGradient[2]);
                 ctx.fillStyle = skyGrad;
                 ctx.fillRect(-400, -300, this.worldWidth + 800, this.groundY + 300);
 
+                // Sol/Luna o Núcleo temático
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(this.worldWidth * 0.5, 190, 110, 0, Math.PI * 2);
-                ctx.fillStyle = arenaType === 'volcano' ? 'rgba(249, 115, 22, 0.25)' : 'rgba(250, 204, 21, 0.16)';
+                ctx.fillStyle = a.moonColor;
                 ctx.fill();
                 ctx.restore();
 
+                // Estructuras de fondo
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
                 for (let x = 80; x < this.worldWidth; x += 280) {
                     ctx.fillRect(x, 260, 160, this.groundY - 260);
@@ -2269,14 +2336,15 @@
                     ctx.fill();
                 }
 
+                // Suelo
                 const floorGrad = ctx.createLinearGradient(0, this.groundY, 0, this.worldHeight + 200);
-                floorGrad.addColorStop(0, '#334155');
-                floorGrad.addColorStop(0.15, '#1e293b');
-                floorGrad.addColorStop(1, '#090b10');
+                floorGrad.addColorStop(0, a.floorColor);
+                floorGrad.addColorStop(0.2, '#0f172a');
+                floorGrad.addColorStop(1, '#07090e');
                 ctx.fillStyle = floorGrad;
                 ctx.fillRect(-400, this.groundY, this.worldWidth + 800, 350);
 
-                ctx.fillStyle = arenaType === 'cyber' ? '#22d3ee' : (arenaType === 'volcano' ? '#f97316' : '#facc15');
+                ctx.fillStyle = a.accentColor;
                 ctx.fillRect(-400, this.groundY, this.worldWidth + 800, 5);
             }
 
@@ -2284,7 +2352,7 @@
                 for (const p of this.platforms) {
                     ctx.fillStyle = '#1e293b';
                     ctx.fillRect(p.x, p.y, p.w, p.h);
-                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillStyle = this.arena.accentColor;
                     ctx.fillRect(p.x, p.y, p.w, 4);
                     ctx.strokeStyle = 'rgba(255,255,255,0.15)';
                     ctx.strokeRect(p.x, p.y, p.w, p.h);
@@ -2293,14 +2361,17 @@
 
             drawFighter(ctx, f) {
                 const arch = f.archetype;
+                const isFemale = arch.gender === 'female';
                 ctx.save();
                 ctx.translate(f.x, f.y);
 
+                // Sombra
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
                 ctx.beginPath();
                 ctx.ellipse(0, 2, 30, 8, 0, 0, Math.PI * 2);
                 ctx.fill();
 
+                // Aura Súper
                 if (f.alive && f.mp >= 100) {
                     const pulse = 1 + Math.sin(f.animFrame * 0.8) * 0.12;
                     ctx.save();
@@ -2336,9 +2407,28 @@
                 const bob = f.onGround && f.state === 'idle' ? Math.sin(f.animFrame) * 3 : 0;
                 const walkSwing = f.state === 'walk' ? Math.sin(f.animFrame * 1.5) * 14 : 0;
 
+                // ACCESORIOS ÚNICOS EN CANVAS POR PERSONAJE
+                if (arch.accessory === 'energyWings' && f.alive) {
+                    ctx.fillStyle = arch.primary;
+                    ctx.beginPath();
+                    ctx.moveTo(-15, -80 + bob);
+                    ctx.lineTo(-45, -110 + bob);
+                    ctx.lineTo(-30, -70 + bob);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (arch.accessory === 'flameAura' && f.alive) {
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(0, -60 + bob, 25 + Math.sin(f.animFrame * 2) * 4, 0, Math.PI * 2);
+                    ctx.globalAlpha = 0.25;
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+
+                // Piernas
                 ctx.fillStyle = arch.giColor;
-                ctx.fillRect(-16 - walkSwing * 0.5, -45, 13, 45);
-                ctx.fillRect(4 + walkSwing * 0.5, -45, 13, 45);
+                ctx.fillRect(-16 - walkSwing * 0.5, -45, isFemale ? 11 : 13, 45);
+                ctx.fillRect(4 + walkSwing * 0.5, -45, isFemale ? 11 : 13, 45);
 
                 if (f.state === 'kick') {
                     ctx.save();
@@ -2351,29 +2441,72 @@
                     ctx.restore();
                 }
 
+                // Torso
                 ctx.fillStyle = arch.giColor;
                 ctx.beginPath();
-                ctx.roundRect(-20, -88 + bob, 40, 46, 6);
+                if (isFemale) {
+                    ctx.moveTo(-16, -88 + bob);
+                    ctx.lineTo(16, -88 + bob);
+                    ctx.lineTo(12, -42 + bob);
+                    ctx.lineTo(-12, -42 + bob);
+                } else {
+                    ctx.roundRect(-20, -88 + bob, 40, 46, 6);
+                }
+                ctx.closePath();
                 ctx.fill();
 
+                // Cinto / Banda
                 ctx.fillStyle = arch.bandColor;
-                ctx.fillRect(-21, -50 + bob, 42, 7);
+                ctx.fillRect(isFemale ? -17 : -21, -50 + bob, isFemale ? 34 : 42, 7);
 
+                // Hombreras / Spikes para Titan / Storm
+                if (arch.accessory === 'pauldrons' || arch.accessory === 'spikes') {
+                    ctx.fillStyle = arch.secondary;
+                    ctx.fillRect(-24, -92 + bob, 10, 12);
+                    ctx.fillRect(14, -92 + bob, 10, 12);
+                }
+
+                // Cabeza
                 ctx.fillStyle = arch.skin;
                 ctx.beginPath();
-                ctx.arc(0, -101 + bob, 15, 0, Math.PI * 2);
+                ctx.arc(0, -101 + bob, isFemale ? 13 : 15, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.fillStyle = arch.bandColor;
-                ctx.fillRect(-15, -108 + bob, 30, 6);
-                ctx.fillRect(-24, -107 + bob + Math.sin(f.animFrame) * 2, 10, 5);
+                // Visor Cibernético (Cyborg)
+                if (arch.accessory === 'visor') {
+                    ctx.fillStyle = '#22d3ee';
+                    ctx.fillRect(2, -105 + bob, 12, 5);
+                }
 
+                // Cabello y Accesorios
+                ctx.fillStyle = arch.bandColor;
+                if (isFemale) {
+                    ctx.fillRect(-14, -112 + bob, 26, 7);
+                    ctx.fillRect(-22, -104 + bob, 10, 16);
+                } else {
+                    ctx.fillRect(-15, -108 + bob, 30, 6);
+                    ctx.fillRect(-24, -107 + bob + Math.sin(f.animFrame) * 2, 10, 5);
+                }
+
+                // Bufanda Flotante (Ronin)
+                if (arch.accessory === 'scarf') {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(-28 + Math.sin(f.animFrame * 1.2) * 5, -96 + bob, 18, 6);
+                }
+
+                // Brazos
                 ctx.fillStyle = arch.skin;
                 if (f.state === 'punch') {
                     ctx.fillRect(12, -80 + bob, 46, 13);
                     ctx.fillStyle = arch.primary;
                     ctx.beginPath();
                     ctx.arc(60, -73 + bob, 11, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (f.state === 'launcher') {
+                    ctx.fillRect(10, -95 + bob, 14, 45);
+                    ctx.fillStyle = arch.primary;
+                    ctx.beginPath();
+                    ctx.arc(17, -100 + bob, 13, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (f.state === 'special' || f.state === 'super') {
                     ctx.fillRect(10, -78 + bob, 34, 14);
@@ -2387,6 +2520,7 @@
                     ctx.fillRect(16, -72 + bob, 10, 10);
                 }
 
+                // Escudo Bloqueo
                 if (f.blocking) {
                     ctx.strokeStyle = '#38bdf8';
                     ctx.lineWidth = 4;
@@ -2454,7 +2588,7 @@
         }
 
         // =========================================================================
-        // 6. NAVEGACIÓN Y EVENTOS
+        // 7. INICIALIZACIÓN Y EVENTOS GENERALES
         // =========================================================================
         function getPlayerProfile() {
             const rawName = document.getElementById('input-player-name').value.trim().toUpperCase();
@@ -2502,7 +2636,6 @@
             switchScreen('menu');
         };
 
-        // Modal de Ajustes
         document.getElementById('btn-open-settings').onclick = () => {
             sfx.sfxSelect();
             activeRebindAction = null;
@@ -2541,7 +2674,7 @@
             localStorage.removeItem('gamepad_binds');
             localStorage.removeItem('keyboard_binds');
             renderSettingsUI();
-            showToast('Controles restaurados a valores por defecto.', 'info');
+            showToast('Controles restaurados por defecto.', 'info');
         };
 
         document.getElementById('btn-save-settings').onclick = () => {
@@ -2549,7 +2682,7 @@
             localStorage.setItem('gamepad_binds', JSON.stringify(currentGamepadBinds));
             localStorage.setItem('keyboard_binds', JSON.stringify(currentKeyboardBinds));
             document.getElementById('modal-settings').classList.add('hidden');
-            showToast('¡Ajustes de controles guardados correctamente!', 'success');
+            showToast('¡Ajustes guardados correctamente!', 'success');
         };
 
         document.getElementById('btn-toggle-sound').onclick = () => {
@@ -2566,11 +2699,11 @@
             sfx.sfxSelect();
             try {
                 const profile = getPlayerProfile();
-                const room = await net.createRoom(profile, 'suzaku');
+                const room = await net.createRoom(profile, 'random', 'normal', '99');
                 state.currentRoom = room;
                 switchScreen('lobby');
                 renderLobby(room);
-                showToast(`Sala ${room.code} creada. ¡Comparte el código!`, 'success');
+                showToast(`Sala ${room.code} creada`, 'success');
             } catch (err) {
                 showToast(err.message || 'No se pudo crear la sala.', 'error');
             }
@@ -2590,7 +2723,7 @@
                 state.currentRoom = room;
                 switchScreen('lobby');
                 renderLobby(room);
-                showToast(`Te uniste a la sala ${room.code}`, 'success');
+                showToast(`Unido a la sala ${room.code}`, 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             }
@@ -2604,7 +2737,9 @@
             const room = {
                 code: 'LOCAL',
                 hostId: net.userId,
-                arena: 'suzaku',
+                arena: 'random',
+                difficulty: 'normal',
+                timerMode: '99',
                 status: 'playing',
                 isLocal: true,
                 slots: [{
@@ -2612,8 +2747,7 @@
                     name: profile.name,
                     archetypeId: profile.archetypeId,
                     isBot: false,
-                    isHost: true,
-                    ready: true
+                    isHost: true
                 }],
                 updatedAt: Date.now()
             };
@@ -2640,6 +2774,18 @@
         document.getElementById('select-arena').onchange = (e) => {
             if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
             state.currentRoom.arena = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
+
+        document.getElementById('select-difficulty').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.difficulty = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
+
+        document.getElementById('select-timer-mode').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.timerMode = e.target.value;
             net.saveRoomState(state.currentRoom);
         };
 
@@ -2675,7 +2821,7 @@
 
         document.getElementById('btn-hud-exit').onclick = () => {
             if (state.currentRoom && !state.currentRoom.isLocal && state.currentRoom.hostId !== net.userId) {
-                showToast('Solo el anfitrión puede detener el combate.', 'warn');
+                showToast('Solo el anfitrión puede salir.', 'warn');
                 return;
             }
             if (state.gameInstance) state.gameInstance.destroy();
@@ -2725,6 +2871,7 @@
         window.onload = async () => {
             renderFighterGrid();
             updateFighterDetails();
+            sfx.startLobbyMusic();
             await net.init();
         };
     </script>
