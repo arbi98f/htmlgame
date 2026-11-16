@@ -88,6 +88,11 @@
         .super-ready {
             animation: pulseGlow 0.9s infinite;
         }
+        .rebind-active {
+            animation: pulseGlow 0.5s infinite;
+            border-color: #facc15 !important;
+            background-color: #854d0e !important;
+        }
     </style>
 </head>
 <body class="relative flex items-center justify-center">
@@ -97,6 +102,52 @@
 
     <!-- Notificación Flotante -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Modal de Configuración / Mapeo de Controles -->
+    <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="arcade-panel rounded-2xl w-full max-w-3xl p-5 sm:p-7 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h2 class="font-arcade text-lg sm:text-xl text-yellow-400">⚙️ AJUSTES DE CONTROLES</h2>
+                    <p class="text-xs text-slate-400">Personaliza la asignación de botones para Teclado y Mando</p>
+                </div>
+                <button id="btn-close-settings" class="btn-arcade px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs font-bold">
+                    ✕ CERRAR
+                </button>
+            </div>
+
+            <!-- Pestañas Teclado / Mando -->
+            <div class="flex border-b border-slate-800 gap-2">
+                <button id="tab-btn-gamepad" class="px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40">🎮 MANDO XBOX</button>
+                <button id="tab-btn-keyboard" class="px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white">⌨️ TECLADO</button>
+            </div>
+
+            <!-- Panel Mando -->
+            <div id="tab-panel-gamepad" class="flex flex-col gap-3">
+                <p class="text-xs text-sky-400">Haz clic en el botón que deseas cambiar y presiona la acción deseada en tu mando Xbox.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="gamepad-binds-container">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Panel Teclado -->
+            <div id="tab-panel-keyboard" class="hidden flex flex-col gap-3">
+                <p class="text-xs text-sky-400">Haz clic en la tecla que deseas cambiar y presiona la nueva tecla en tu teclado.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="keyboard-binds-container">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center border-t border-slate-800 pt-3">
+                <button id="btn-reset-binds" class="btn-arcade px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-xs font-bold">
+                    🔄 RESTAURAR POR DEFECTO
+                </button>
+                <button id="btn-save-settings" class="btn-arcade px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold text-xs tracking-wide">
+                    ✓ GUARDAR Y CERRAR
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ==================== PANTALLA 1: MENÚ PRINCIPAL Y SELECCIÓN ==================== -->
     <div id="screen-menu" class="relative z-10 w-full max-w-6xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
@@ -121,7 +172,10 @@
                             class="bg-slate-900/90 border-2 border-slate-700 focus:border-yellow-400 rounded-xl px-3 py-2 text-white font-bold text-base outline-none w-full sm:w-64 transition">
                     </div>
                     <div class="flex items-center gap-2">
-                        <button id="btn-toggle-sound" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5">
+                        <button id="btn-open-settings" class="px-3 py-2 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+                            ⚙️ AJUSTES CONTROLES
+                        </button>
+                        <button id="btn-toggle-sound" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
                             <span id="sound-icon">🔊</span> <span id="sound-text">SONIDO: ON</span>
                         </button>
                     </div>
@@ -155,6 +209,28 @@
                         <div class="bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
                             <div class="text-[10px] text-slate-400">PODER</div>
                             <div id="stat-pwr" class="text-sm font-extrabold text-sky-400">★★★★★</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3 mt-1">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <h3 class="font-arcade text-[10px] sm:text-xs text-sky-300">CONTROLES DE COMBATE</h3>
+                        <span class="text-[10px] text-slate-400">TECLADO / MANDO XBOX</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="space-y-1.5" id="summary-keyboard-binds">
+                            <p class="text-yellow-300 font-extrabold tracking-wide">⌨️ TECLADO</p>
+                            <p class="text-slate-300"><b class="text-white">A / D</b> · Moverse | <b class="text-white">W / Flecha Arriba</b> · Saltar</p>
+                            <p class="text-slate-300"><b class="text-white">S</b> · Agacharse | <b class="text-white">J</b> · Puño débil | <b class="text-white">U</b> · Puño medio</p>
+                            <p class="text-slate-300"><b class="text-white">K</b> · Patada débil | <b class="text-white">I</b> · Patada media</p>
+                            <p class="text-slate-300"><b class="text-white">L</b> · Bloquear | <b class="text-white">O</b> · Súper</p>
+                        </div>
+                        <div class="space-y-1.5" id="summary-gamepad-binds">
+                            <p class="text-emerald-300 font-extrabold tracking-wide">🎮 MANDO XBOX</p>
+                            <p class="text-slate-300"><b class="text-white">Cruceta / Stick izq.</b> · Moverse y Saltar (↑)</p>
+                            <p class="text-slate-300"><b class="text-white">X</b> · Puño débil | <b class="text-white">Y</b> · Puño medio | <b class="text-white">LB</b> · Puño fuerte</p>
+                            <p class="text-slate-300"><b class="text-white">A</b> · Patada débil | <b class="text-white">B</b> · Patada media | <b class="text-white">RB</b> · Patada fuerte</p>
+                            <p class="text-slate-300"><b class="text-white">B + Dirección</b> · Poder especial | <b class="text-white">RT</b> · Súper</p>
                         </div>
                     </div>
                 </div>
@@ -193,31 +269,31 @@
                 </div>
 
                 <div class="arcade-panel rounded-2xl p-4 flex flex-col gap-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Controles de Combate</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Controles Rápidos</h3>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Mover / Saltar</span>
-                            <span class="font-bold text-white">WASD / Flechas</span>
+                            <span class="text-slate-400">Saltar</span>
+                            <span class="font-bold text-yellow-400">Cruceta ↑ / W</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Puño Rápido</span>
-                            <span class="font-bold text-yellow-400">J / Z</span>
+                            <span class="text-slate-400">Puño / Patada Débil</span>
+                            <span class="font-bold text-white">X / A (Mando)</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Patada Fuerte</span>
-                            <span class="font-bold text-orange-400">K / X</span>
+                            <span class="text-slate-400">Puño / Patada Medio</span>
+                            <span class="font-bold text-orange-400">Y / B (Mando)</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Escudo / Bloqueo</span>
-                            <span class="font-bold text-sky-400">L / C</span>
+                            <span class="text-slate-400">Puño / Patada Fuerte</span>
+                            <span class="font-bold text-sky-400">LB / RB (Mando)</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Lanzar Poder</span>
-                            <span class="font-bold text-purple-400">U / V</span>
+                            <span class="text-slate-400">Poder Especial</span>
+                            <span class="font-bold text-purple-400">B + Dir / U</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
                             <span class="text-slate-400">SÚPER (100% MP)</span>
-                            <span class="font-bold text-red-400">I / B</span>
+                            <span class="font-bold text-red-400">RT / O</span>
                         </div>
                     </div>
                 </div>
@@ -360,6 +436,73 @@
     <!-- ==================== LÓGICA DEL JUEGO ==================== -->
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script type="module">
+        // =========================================================================
+        // MAPEO DE CONTROLES RECONFIGURABLES
+        // =========================================================================
+        const DEFAULT_GAMEPAD_BINDS = {
+            punchWeak: 2,    // X
+            punchMedium: 3,  // Y
+            punchStrong: 4,  // LB
+            kickWeak: 0,     // A
+            kickMedium: 1,   // B
+            kickStrong: 5,   // RB
+            super: 7,        // RT
+            block: 6         // LT (o LB alternativo)
+        };
+
+        const DEFAULT_KEYBOARD_BINDS = {
+            up: ['KeyW', 'ArrowUp'],
+            down: ['KeyS', 'ArrowDown'],
+            left: ['KeyA', 'ArrowLeft'],
+            right: ['KeyD', 'ArrowRight'],
+            punchWeak: ['KeyJ'],
+            punchMedium: ['KeyU'],
+            kickWeak: ['KeyK'],
+            kickMedium: ['KeyI'],
+            block: ['KeyL'],
+            super: ['KeyO']
+        };
+
+        let currentGamepadBinds = JSON.parse(localStorage.getItem('gamepad_binds')) || { ...DEFAULT_GAMEPAD_BINDS };
+        let currentKeyboardBinds = JSON.parse(localStorage.getItem('keyboard_binds')) || JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_BINDS));
+
+        const GAMEPAD_BUTTON_NAMES = {
+            0: 'A',
+            1: 'B',
+            2: 'X',
+            3: 'Y',
+            4: 'LB',
+            5: 'RB',
+            6: 'LT',
+            7: 'RT',
+            8: 'Back / View',
+            9: 'Start / Menu',
+            10: 'L3 (Stick Izq.)',
+            11: 'R3 (Stick Der.)',
+            12: 'Cruceta Arriba',
+            13: 'Cruceta Abajo',
+            14: 'Cruceta Izquierda',
+            15: 'Cruceta Derecha'
+        };
+
+        const BIND_LABELS = {
+            punchWeak: 'Puño débil',
+            punchMedium: 'Puño medio',
+            punchStrong: 'Puño fuerte',
+            kickWeak: 'Patada débil',
+            kickMedium: 'Patada media',
+            kickStrong: 'Patada fuerte',
+            super: 'Súper',
+            block: 'Bloquear',
+            up: 'Saltar',
+            down: 'Agacharse',
+            left: 'Mover Izquierda',
+            right: 'Mover Derecha'
+        };
+
+        let activeRebindAction = null;
+        let activeRebindType = null; // 'gamepad' o 'keyboard'
+
         // =========================================================================
         // 1. 8 ARQUETIPOS (NOMBRES ORIGINALES Y VARIADOS)
         // =========================================================================
@@ -937,7 +1080,7 @@
         const net = new RoomNetworkManager();
 
         // =========================================================================
-        // 4. ESTADO DE INTERFAZ
+        // 4. ESTADO DE INTERFAZ Y AJUSTES
         // =========================================================================
         const state = {
             playerName: 'BRAWLER_1',
@@ -1009,6 +1152,105 @@
             document.getElementById('stat-spd').textContent = '★'.repeat(f.stats.spd) + '☆'.repeat(5 - f.stats.spd);
             document.getElementById('stat-pwr').textContent = '★'.repeat(f.stats.pwr) + '☆'.repeat(5 - f.stats.pwr);
         }
+
+        function renderSettingsUI() {
+            // Render Gamepad Binds
+            const gpContainer = document.getElementById('gamepad-binds-container');
+            gpContainer.innerHTML = '';
+            const gpActions = ['punchWeak', 'punchMedium', 'punchStrong', 'kickWeak', 'kickMedium', 'kickStrong', 'super', 'block'];
+            
+            gpActions.forEach(action => {
+                const btnIndex = currentGamepadBinds[action];
+                const btnLabel = GAMEPAD_BUTTON_NAMES[btnIndex] || `Botón ${btnIndex}`;
+                const row = document.createElement('div');
+                row.className = 'bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center';
+                const isRebinding = activeRebindType === 'gamepad' && activeRebindAction === action;
+                row.innerHTML = `
+                    <span class="text-slate-300 font-bold">${BIND_LABELS[action]}</span>
+                    <button data-action="${action}" class="rebind-gp-btn px-3 py-1 rounded-lg ${isRebinding ? 'rebind-active bg-yellow-600 text-white font-extrabold' : 'bg-slate-800 hover:bg-slate-700 text-yellow-400 font-bold'} border border-slate-700">
+                        ${isRebinding ? 'PRESIONA UN BOTÓN...' : btnLabel}
+                    </button>
+                `;
+                gpContainer.appendChild(row);
+            });
+
+            // Render Keyboard Binds
+            const kbContainer = document.getElementById('keyboard-binds-container');
+            kbContainer.innerHTML = '';
+            const kbActions = ['up', 'down', 'left', 'right', 'punchWeak', 'punchMedium', 'kickWeak', 'kickMedium', 'block', 'super'];
+
+            kbActions.forEach(action => {
+                const keys = currentKeyboardBinds[action] || [];
+                const keysLabel = keys.map(k => k.replace('Key', '').replace('Arrow', 'Flecha ')).join(' / ');
+                const row = document.createElement('div');
+                row.className = 'bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center';
+                const isRebinding = activeRebindType === 'keyboard' && activeRebindAction === action;
+                row.innerHTML = `
+                    <span class="text-slate-300 font-bold">${BIND_LABELS[action]}</span>
+                    <button data-action="${action}" class="rebind-kb-btn px-3 py-1 rounded-lg ${isRebinding ? 'rebind-active bg-yellow-600 text-white font-extrabold' : 'bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold'} border border-slate-700">
+                        ${isRebinding ? 'PRESIONA UNA TECLA...' : keysLabel}
+                    </button>
+                `;
+                kbContainer.appendChild(row);
+            });
+
+            document.querySelectorAll('.rebind-gp-btn').forEach(btn => {
+                btn.onclick = () => {
+                    sfx.sfxSelect();
+                    activeRebindType = 'gamepad';
+                    activeRebindAction = btn.getAttribute('data-action');
+                    renderSettingsUI();
+                };
+            });
+
+            document.querySelectorAll('.rebind-kb-btn').forEach(btn => {
+                btn.onclick = () => {
+                    sfx.sfxSelect();
+                    activeRebindType = 'keyboard';
+                    activeRebindAction = btn.getAttribute('data-action');
+                    renderSettingsUI();
+                };
+            });
+        }
+
+        // Bucle para escuchar pulsaciones de Gamepad en la pantalla de ajustes
+        function pollGamepadRebind() {
+            if (activeRebindType === 'gamepad' && activeRebindAction) {
+                const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+                for (const pad of pads) {
+                    if (pad && pad.connected) {
+                        for (let i = 0; i < pad.buttons.length; i++) {
+                            // No permitir asignar la cruceta (12,13,14,15) si es para ataque
+                            if (pad.buttons[i].pressed) {
+                                currentGamepadBinds[activeRebindAction] = i;
+                                sfx.sfxSelect();
+                                showToast(`Asignado ${BIND_LABELS[activeRebindAction]} a ${GAMEPAD_BUTTON_NAMES[i] || 'Botón ' + i}`, 'success');
+                                activeRebindAction = null;
+                                activeRebindType = null;
+                                renderSettingsUI();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            requestAnimationFrame(pollGamepadRebind);
+        }
+        requestAnimationFrame(pollGamepadRebind);
+
+        // Escuchar teclas para rebind de teclado
+        window.addEventListener('keydown', (e) => {
+            if (activeRebindType === 'keyboard' && activeRebindAction) {
+                e.preventDefault();
+                e.stopPropagation();
+                currentKeyboardBinds[activeRebindAction] = [e.code];
+                sfx.sfxSelect();
+                showToast(`Asignado ${BIND_LABELS[activeRebindAction]} a ${e.code.replace('Key', '')}`, 'success');
+                activeRebindAction = null;
+                activeRebindType = null;
+                renderSettingsUI();
+            }
+        }, true);
 
         function renderLobby(room) {
             if (!room) return;
@@ -1128,6 +1370,8 @@
                 this.floatingTexts = [];
                 this.keys = {};
                 this.remoteInputs = {};
+                this.gamepadConnected = false;
+                this.gamepadIndex = null;
 
                 this.camera = { x: this.worldWidth / 2, y: this.worldHeight / 2, zoom: 1, shake: 0 };
                 this.hitStopFrames = 0;
@@ -1170,6 +1414,8 @@
                         maxMp: 100,
                         alive: true,
                         onGround: true,
+                        jumpHoldFrames: 0,
+                        jumpCutApplied: false,
                         crouching: false,
                         blocking: false,
                         state: 'idle',
@@ -1182,7 +1428,6 @@
                         kos: 0,
                         damageDealt: 0,
                         animFrame: 0,
-                        // Ritmo del bot ajustado (más pausado y estratégico)
                         aiTimer: 35 + Math.random() * 40,
                         aiDecision: 'approach'
                     };
@@ -1242,16 +1487,31 @@
 
             bindInputs() {
                 this._onKeyDown = (e) => {
+                    if (activeRebindType) return;
                     this.keys[e.code] = true;
                     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                         e.preventDefault();
                     }
                 };
                 this._onKeyUp = (e) => {
+                    if (activeRebindType) return;
                     this.keys[e.code] = false;
                 };
                 window.addEventListener('keydown', this._onKeyDown);
                 window.addEventListener('keyup', this._onKeyUp);
+                this._onGamepadConnected = (e) => {
+                    this.gamepadIndex = e.gamepad.index;
+                    this.gamepadConnected = true;
+                    if (typeof showToast === 'function') showToast('Mando conectado: ' + (e.gamepad.id || 'Xbox'));
+                };
+                this._onGamepadDisconnected = (e) => {
+                    if (this.gamepadIndex === e.gamepad.index) {
+                        this.gamepadIndex = null;
+                        this.gamepadConnected = false;
+                    }
+                };
+                window.addEventListener('gamepadconnected', this._onGamepadConnected);
+                window.addEventListener('gamepaddisconnected', this._onGamepadDisconnected);
 
                 document.querySelectorAll('.touch-btn').forEach(btn => {
                     const code = btn.getAttribute('data-key');
@@ -1264,6 +1524,8 @@
                 this.running = false;
                 window.removeEventListener('keydown', this._onKeyDown);
                 window.removeEventListener('keyup', this._onKeyUp);
+                window.removeEventListener('gamepadconnected', this._onGamepadConnected);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnected);
             }
 
             resize() {
@@ -1306,21 +1568,67 @@
             }
 
             getLocalInputMap() {
+                const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+                let pad = this.gamepadIndex !== null ? pads[this.gamepadIndex] : null;
+                if (!pad) {
+                    for (const candidate of pads) {
+                        if (candidate && candidate.connected) { pad = candidate; this.gamepadIndex = candidate.index; break; }
+                    }
+                }
+
+                const button = (index) => !!(pad && pad.buttons[index] && (pad.buttons[index].pressed || pad.buttons[index].value > 0.5));
+                const axisX = pad && pad.axes.length > 0 ? pad.axes[0] : 0;
+                const axisY = pad && pad.axes.length > 1 ? pad.axes[1] : 0;
+                const deadZone = 0.28;
+
+                // Mando: Dirección ÚNICAMENTE desde cruceta o stick (NO desde botón A)
+                const gpLeft = !!pad && (button(14) || axisX < -deadZone);
+                const gpRight = !!pad && (button(15) || axisX > deadZone);
+                const gpUp = !!pad && (button(12) || axisY < -deadZone);
+                const gpDown = !!pad && (button(13) || axisY > deadZone);
+
+                // Comprobar si hay una dirección presionada para combinar con B para poder especial
+                const hasDirection = gpLeft || gpRight || gpUp || gpDown;
+
+                // Teclado configurable
+                const isKbKey = (action) => {
+                    const list = currentKeyboardBinds[action] || [];
+                    return list.some(k => !!this.keys[k]);
+                };
+
+                // Comprobar botones de mando reconfigurados
+                const isGpBtn = (action) => {
+                    const btnIdx = currentGamepadBinds[action];
+                    return btnIdx !== undefined && button(btnIdx);
+                };
+
+                const punchW = isKbKey('punchWeak') || isGpBtn('punchWeak');
+                const punchM = isKbKey('punchMedium') || isGpBtn('punchMedium');
+                const punchS = isGpBtn('punchStrong');
+
+                const kickW = isKbKey('kickWeak') || isGpBtn('kickWeak');
+                const kickM = isKbKey('kickMedium') || isGpBtn('kickMedium');
+                const kickS = isGpBtn('kickStrong');
+
+                const isBPress = button(1); // Botón B por defecto o asignado a Patada Media
+                const specialTriggered = (isBPress && hasDirection) || isKbKey('special');
+
                 return {
-                    left: !!(this.keys['KeyA'] || this.keys['ArrowLeft']),
-                    right: !!(this.keys['KeyD'] || this.keys['ArrowRight']),
-                    up: !!(this.keys['KeyW'] || this.keys['ArrowUp']),
-                    down: !!(this.keys['KeyS'] || this.keys['ArrowDown']),
-                    punch: !!(this.keys['KeyJ'] || this.keys['KeyZ']),
-                    kick: !!(this.keys['KeyK'] || this.keys['KeyX']),
-                    block: !!(this.keys['KeyL'] || this.keys['KeyC']),
-                    special: !!(this.keys['KeyU'] || this.keys['KeyV']),
-                    super: !!(this.keys['KeyI'] || this.keys['KeyB'])
+                    left: isKbKey('left') || gpLeft,
+                    right: isKbKey('right') || gpRight,
+                    up: isKbKey('up') || gpUp,
+                    jumpHeld: isKbKey('up') || gpUp,
+                    down: isKbKey('down') || gpDown,
+                    punch: punchW || punchM || punchS,
+                    kick: (kickW || kickM || kickS) && !specialTriggered,
+                    block: isKbKey('block') || isGpBtn('block'),
+                    special: specialTriggered,
+                    super: isKbKey('super') || isGpBtn('super')
                 };
             }
 
             computeBotInput(bot) {
-                const input = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
+                const input = { left: false, right: false, up: false, jumpHeld: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
                 let nearest = null;
                 let minDist = Infinity;
                 for (const other of this.fighters) {
@@ -1344,7 +1652,6 @@
                     return input;
                 }
 
-                // Temporizador de IA más pausado para evitar reacciones inhumanas y aceleradas
                 bot.aiTimer--;
                 if (bot.aiTimer <= 0) {
                     bot.aiTimer = 35 + Math.floor(Math.random() * 45);
@@ -1417,7 +1724,7 @@
                         continue;
                     }
 
-                    let input = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
+                    let input = { left: false, right: false, up: false, jumpHeld: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
                     if (this.matchState === 'fighting') {
                         if (f.id === this.localUserId) {
                             input = this.getLocalInputMap();
@@ -1482,8 +1789,19 @@
                     if (input.up && f.onGround) {
                         f.vy = arch.jumpForce;
                         f.onGround = false;
+                        f.jumpHoldFrames = 0;
+                        f.jumpCutApplied = false;
                         f.state = 'jump';
                         this.spawnDust(f.x, f.y, 6);
+                    }
+                    if (!f.onGround && f.vy < 0) {
+                        if (input.jumpHeld && f.jumpHoldFrames < 18) {
+                            f.vy -= 0.28;
+                            f.jumpHoldFrames++;
+                        } else if (!input.jumpHeld && !f.jumpCutApplied && f.vy < -4) {
+                            f.vy *= 0.58;
+                            f.jumpCutApplied = true;
+                        }
                     }
                 } else {
                     f.vx *= 0.8;
@@ -2182,6 +2500,56 @@
             net.leaveRoom();
             state.currentRoom = null;
             switchScreen('menu');
+        };
+
+        // Modal de Ajustes
+        document.getElementById('btn-open-settings').onclick = () => {
+            sfx.sfxSelect();
+            activeRebindAction = null;
+            activeRebindType = null;
+            renderSettingsUI();
+            document.getElementById('modal-settings').classList.remove('hidden');
+        };
+
+        document.getElementById('btn-close-settings').onclick = () => {
+            sfx.sfxSelect();
+            activeRebindAction = null;
+            activeRebindType = null;
+            document.getElementById('modal-settings').classList.add('hidden');
+        };
+
+        document.getElementById('tab-btn-gamepad').onclick = () => {
+            sfx.sfxSelect();
+            document.getElementById('tab-btn-gamepad').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40";
+            document.getElementById('tab-btn-keyboard').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white";
+            document.getElementById('tab-panel-gamepad').classList.remove('hidden');
+            document.getElementById('tab-panel-keyboard').classList.add('hidden');
+        };
+
+        document.getElementById('tab-btn-keyboard').onclick = () => {
+            sfx.sfxSelect();
+            document.getElementById('tab-btn-keyboard').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40";
+            document.getElementById('tab-btn-gamepad').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white";
+            document.getElementById('tab-panel-keyboard').classList.remove('hidden');
+            document.getElementById('tab-panel-gamepad').classList.add('hidden');
+        };
+
+        document.getElementById('btn-reset-binds').onclick = () => {
+            sfx.sfxSelect();
+            currentGamepadBinds = { ...DEFAULT_GAMEPAD_BINDS };
+            currentKeyboardBinds = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_BINDS));
+            localStorage.removeItem('gamepad_binds');
+            localStorage.removeItem('keyboard_binds');
+            renderSettingsUI();
+            showToast('Controles restaurados a valores por defecto.', 'info');
+        };
+
+        document.getElementById('btn-save-settings').onclick = () => {
+            sfx.sfxSelect();
+            localStorage.setItem('gamepad_binds', JSON.stringify(currentGamepadBinds));
+            localStorage.setItem('keyboard_binds', JSON.stringify(currentKeyboardBinds));
+            document.getElementById('modal-settings').classList.add('hidden');
+            showToast('¡Ajustes de controles guardados correctamente!', 'success');
         };
 
         document.getElementById('btn-toggle-sound').onclick = () => {
