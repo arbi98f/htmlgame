@@ -3,2354 +3,1684 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STREET BRAWL 8: ARCADE ROYALE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+    <title>STREET BRAWL 8 - P2P Arcade Royale</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap');
+
         :root {
-            --neon-yellow: #facc15;
-            --neon-red: #ef4444;
-            --neon-blue: #38bdf8;
-            --neon-purple: #c084fc;
-            --dark-bg: #090b10;
+            --bg-dark: #0a0b10;
+            --panel-bg: rgba(16, 19, 28, 0.94);
+            --accent-gold: #ffcc00;
+            --accent-red: #ff2a55;
+            --accent-cyan: #00f0ff;
+            --accent-green: #00ff88;
         }
+
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-        }
-        body {
             margin: 0;
             padding: 0;
-            background-color: var(--dark-bg);
+        }
+
+        body {
+            background-color: var(--bg-dark);
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             overflow: hidden;
             height: 100vh;
             width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 42, 85, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.15) 0%, transparent 40%);
         }
-        .font-arcade {
-            font-family: 'Press Start 2P', monospace;
+
+        .arcade-font {
+            font-family: 'Press Start 2P', cursive;
         }
-        .arcade-title {
-            text-shadow: 0 4px 0 #b91c1c, 0 8px 20px rgba(239, 68, 68, 0.7);
-            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 50%, #dc2626 100%);
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* LOBBY & MENU CARD */
+        .card {
+            background: var(--panel-bg);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 24px;
+            width: 100%;
+            max-width: 960px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 240, 255, 0.12);
+            backdrop-filter: blur(12px);
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        .title-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title-logo h1 {
+            font-size: clamp(1.3rem, 3.5vw, 2.3rem);
+            background: linear-gradient(to bottom, #fff 20%, var(--accent-gold) 60%, var(--accent-red) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(255, 42, 85, 0.5);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
         }
-        .arcade-panel {
-            background: linear-gradient(145deg, rgba(17, 24, 39, 0.92), rgba(9, 11, 16, 0.96));
-            border: 2px solid rgba(250, 204, 21, 0.35);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(56, 189, 248, 0.1);
-            backdrop-filter: blur(10px);
+
+        .title-logo .subtitle {
+            color: var(--accent-cyan);
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
-        .btn-arcade {
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            text-shadow: 0 2px 0 rgba(0,0,0,0.6);
-            box-shadow: 0 4px 0 rgba(0,0,0,0.6);
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        .btn-arcade:hover:not(:disabled) {
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #252a3a, #161924);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            filter: brightness(1.12);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.25);
         }
-        .btn-arcade:active:not(:disabled) {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.6);
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
         }
-        .scanlines {
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.25) 50%
-            );
-            background-size: 100% 4px;
-            pointer-events: none;
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
-        .fighter-card {
-            transition: all 0.2s ease;
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-red), #b80028);
+            border-color: #ff6b8b;
         }
-        .fighter-card.selected {
-            border-color: #facc15;
-            box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
-            transform: scale(1.04);
+
+        .btn-cyan {
+            background: linear-gradient(135deg, #0099cc, #005f80);
+            border-color: var(--accent-cyan);
         }
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #e6a800, #996b00);
+            border-color: var(--accent-gold);
+            color: #000;
+        }
+
+        /* CHARACTER SELECTOR */
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .char-card {
+            background: rgba(0, 0, 0, 0.45);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .char-card:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .char-card.selected {
+            border-color: var(--accent-gold);
+            background: rgba(255, 204, 0, 0.15);
+            box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
+        }
+
+        .char-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            margin: 0 auto 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 2px solid #fff;
+        }
+
+        .char-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .char-power {
+            font-size: 0.65rem;
+            color: #aaa;
+        }
+
+        /* LOBBY SLOTS */
+        .room-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 14px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            margin-bottom: 16px;
+        }
+
+        .code-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .room-code-display {
+            font-size: 1.4rem;
+            color: var(--accent-gold);
+            letter-spacing: 4px;
+            background: rgba(255, 204, 0, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px dashed var(--accent-gold);
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .player-slot {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .player-slot.occupied {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.06);
+        }
+
+        .player-slot.bot {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.08);
+        }
+
+        .slot-tag {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.6);
+            display: inline-block;
+            width: fit-content;
+        }
+
+        /* GAME CANVAS & HUD */
+        #game-screen {
+            padding: 0;
+            background: #000;
+        }
+
         canvas {
             display: block;
             width: 100%;
             height: 100%;
         }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 12px rgba(250, 204, 21, 0.4); }
-            50% { box-shadow: 0 0 24px rgba(250, 204, 21, 0.9); }
+
+        .hud-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            z-index: 20;
         }
-        .super-ready {
-            animation: pulseGlow 0.9s infinite;
+
+        @media (max-width: 768px) {
+            .hud-overlay {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .hud-card {
+            background: rgba(10, 12, 18, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 6px;
+            padding: 5px 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .hud-card.dead {
+            opacity: 0.4;
+            border-color: #ff2a55;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 7px;
+            background: #222;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff2a55, #00ff88);
+            transition: width 0.1s linear;
+        }
+
+        .mp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0088ff, #00f0ff);
+            transition: width 0.1s linear;
+        }
+
+        .game-top-controls {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            z-index: 30;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* TOUCH CONTROLS */
+        .touch-controls {
+            display: none;
+            position: absolute;
+            bottom: 18px;
+            left: 18px;
+            right: 18px;
+            justify-content: space-between;
+            z-index: 25;
+            pointer-events: none;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .touch-controls {
+                display: flex;
+            }
+        }
+
+        .touch-group {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .t-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .t-btn:active {
+            background: rgba(0, 240, 255, 0.45);
+            transform: scale(0.92);
+        }
+
+        #status-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--accent-cyan);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            z-index: 100;
+            display: none;
+        }
+
+        .controls-hint {
+            margin-top: 14px;
+            padding: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .key-cap {
+            background: #2b3040;
+            border: 1px solid #555;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-gold);
+            font-weight: bold;
         }
     </style>
 </head>
-<body class="relative flex items-center justify-center">
+<body>
 
-    <!-- Efecto CRT sutil -->
-    <div class="scanlines fixed inset-0 z-50 opacity-30"></div>
-
-    <!-- Notificación Flotante (Reemplazo seguro de alert) -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- ==================== PANTALLA 1: MENÚ PRINCIPAL Y SELECCIÓN ==================== -->
-    <div id="screen-menu" class="relative z-10 w-full max-w-6xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
-        <!-- Cabecera -->
-        <header class="text-center py-2">
-            <div class="inline-block px-3 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 text-xs font-bold tracking-widest uppercase mb-2">
-                EDICIÓN MULTIJUGADOR • HASTA 8 LUCHADORES
+    <!-- SCREEN 1: MAIN MENU -->
+    <div id="menu-screen" class="screen active">
+        <div class="card">
+            <div class="title-logo">
+                <h1 class="arcade-font">STREET BRAWL 8</h1>
+                <div class="subtitle">P2P WebRTC Arcade Royale • Hasta 8 Jugadores</div>
             </div>
-            <h1 class="font-arcade text-2xl sm:text-4xl md:text-5xl arcade-title tracking-wider leading-tight">
-                STREET BRAWL 8
-            </h1>
-            <p class="text-slate-400 text-sm sm:text-base mt-1 font-semibold tracking-wide">
-                ARCADE ROYALE • COMBATE POR SALAS Y PODERES ELEMENTALES
-            </p>
-        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <!-- Columna Izquierda: Perfil y Selección de Luchador -->
-            <div class="lg:col-span-7 arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div class="grid-2">
+                <!-- LEFT: PROFILE & FIGHTER -->
+                <div class="section-box">
+                    <div class="section-title">
+                        <span class="arcade-font">1. TU LUCHADOR</span>
+                    </div>
+                    <input type="text" id="player-name" placeholder="Tu Nombre (ej. RyuPeru)" maxlength="12" value="Fighter">
+                    
+                    <div class="char-grid" id="char-selector"></div>
+                </div>
+
+                <!-- RIGHT: ONLINE P2P ROOMS -->
+                <div class="section-box" style="display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
-                        <label class="block text-xs uppercase tracking-wider text-yellow-400 font-bold mb-1">Nombre del Luchador</label>
-                        <input id="input-player-name" type="text" maxlength="14" placeholder="Ej. RYU_PERU" 
-                            class="bg-slate-900/90 border-2 border-slate-700 focus:border-yellow-400 rounded-xl px-3 py-2 text-white font-bold text-base outline-none w-full sm:w-64 transition">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="btn-toggle-sound" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5">
-                            <span id="sound-icon">🔊</span> <span id="sound-text">SONIDO: ON</span>
+                        <div class="section-title">
+                            <span class="arcade-font">2. SALA MULTIJUGADOR P2P</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #bbb; margin-bottom: 14px;">
+                            Crea una sala y comparte el código de 5 letras con hasta 7 amigos para pelear en tiempo real desde cualquier red.
+                        </p>
+                        <button id="btn-create-room" class="btn btn-primary" style="width: 100%; padding: 14px; margin-bottom: 16px;">
+                            + CREAR SALA NUEVA (HOST)
                         </button>
                     </div>
-                </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Elige tu Estilo y Poder (8 Arquetipos)</span>
-                        <span id="selected-fighter-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">RYU-STYLE • ENERGÍA AZUL</span>
-                    </div>
-                    <!-- Grid de 8 personajes -->
-                    <div id="fighter-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
-                </div>
-
-                <!-- Ficha técnica del personaje seleccionado -->
-                <div id="fighter-details" class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div id="detail-avatar" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold border-2 border-white/20 shadow-lg">🔥</div>
-                        <div>
-                            <h3 id="detail-name" class="font-bold text-lg text-white leading-none">RYU-STYLE</h3>
-                            <p id="detail-power" class="text-xs text-sky-400 font-semibold mt-1">Poder: Hadouken de Energía Azul • Super: Shinku Hadouken</p>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px;">
+                        <div class="section-title">
+                            <span class="arcade-font">UNIRSE CON CÓDIGO</span>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 w-full sm:w-auto text-center">
-                        <div class="bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-400">FUERZA</div>
-                            <div id="stat-atk" class="text-sm font-extrabold text-red-400">★★★★☆</div>
-                        </div>
-                        <div class="bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-400">VELOCIDAD</div>
-                            <div id="stat-spd" class="text-sm font-extrabold text-emerald-400">★★★★☆</div>
-                        </div>
-                        <div class="bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-400">PODER</div>
-                            <div id="stat-pwr" class="text-sm font-extrabold text-sky-400">★★★★★</div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="join-code-input" placeholder="CÓDIGO (5 LETRAS)" maxlength="5" style="text-transform: uppercase; letter-spacing: 3px; text-align: center;">
+                            <button id="btn-join-room" class="btn btn-cyan">ENTRAR</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Columna Derecha: Salas Multijugador y Controles -->
-            <div class="lg:col-span-5 flex flex-col gap-4">
-                <!-- Panel de Salas -->
-                <div class="arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
-                    <div class="flex items-center justify-between">
-                        <h2 class="font-arcade text-sm sm:text-base text-yellow-400">SALAS DE COMBATE</h2>
-                        <span id="connection-mode-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                            ● RED LISTA
-                        </span>
-                    </div>
-
-                    <!-- Crear Sala -->
-                    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 flex flex-col gap-2.5">
-                        <p class="text-xs text-slate-300">Crea una arena privada de hasta <strong class="text-yellow-400">8 jugadores</strong>, comparte el código o rellena con Bots IA.</p>
-                        <button id="btn-create-room" class="btn-arcade w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 text-white font-arcade text-xs sm:text-sm tracking-wide cursor-pointer">
-                            ⚡ CREAR NUEVA SALA
-                        </button>
-                    </div>
-
-                    <!-- Unirse por Código -->
-                    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 flex flex-col gap-2.5">
-                        <label class="text-xs font-bold uppercase tracking-wider text-sky-400">Unirse con Código de Sala</label>
-                        <div class="flex gap-2">
-                            <input id="input-room-code" type="text" maxlength="5" placeholder="EJ. SF89X" 
-                                class="uppercase bg-slate-950 border-2 border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2.5 text-center font-arcade text-base text-yellow-300 tracking-widest w-full outline-none">
-                            <button id="btn-join-room" class="btn-arcade px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-sm tracking-wider cursor-pointer whitespace-nowrap">
-                                UNIRSE
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Partida Rápida Solo vs 7 Bots -->
-                    <button id="btn-quick-match" class="btn-arcade w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs sm:text-sm tracking-wider cursor-pointer">
-                        🔥 BATALLA RÁPIDA INSTANTÁNEA (1 vs 7 BOTS)
-                    </button>
-                </div>
-
-                <!-- Guía Rápida de Controles -->
-                <div class="arcade-panel rounded-2xl p-4 flex flex-col gap-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Controles de Combate</h3>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Mover / Saltar</span>
-                            <span class="font-bold text-white">WASD / Flechas</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Puño Rápido</span>
-                            <span class="font-bold text-yellow-400">J / Z</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Patada Fuerte</span>
-                            <span class="font-bold text-orange-400">K / X</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Escudo / Bloqueo</span>
-                            <span class="font-bold text-sky-400">L / C</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Lanzar Poder</span>
-                            <span class="font-bold text-purple-400">U / V</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">SÚPER (100% MP)</span>
-                            <span class="font-bold text-red-400">I / B</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="controls-hint">
+                <span><span class="key-cap">A / D</span> o <span class="key-cap">◄ / ►</span> Mover</span>
+                <span><span class="key-cap">W</span> o <span class="key-cap">▲</span> Saltar</span>
+                <span><span class="key-cap">S</span> o <span class="key-cap">▼</span> Bloquear</span>
+                <span><span class="key-cap">J</span> / <span class="key-cap">Z</span> Golpe</span>
+                <span><span class="key-cap">K</span> / <span class="key-cap">X</span> Poder</span>
+                <span><span class="key-cap">L</span> / <span class="key-cap">C</span> Súper (100% MP)</span>
             </div>
         </div>
     </div>
 
-    <!-- ==================== PANTALLA 2: LOBBY DE SALA (8 SLOTS) ==================== -->
-    <div id="screen-lobby" class="hidden relative z-10 w-full max-w-5xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
-        <div class="arcade-panel rounded-2xl p-4 sm:p-6 flex flex-col gap-5">
-            <!-- Barra superior del lobby -->
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                <div>
-                    <span class="text-xs uppercase tracking-widest text-sky-400 font-bold">SALA DE ESPERA • ARENA MULTIJUGADOR</span>
-                    <div class="flex items-center gap-3 mt-1">
-                        <h2 class="font-arcade text-xl sm:text-3xl text-yellow-400 tracking-widest" id="lobby-room-code">SF89X</h2>
-                        <button id="btn-copy-code" class="btn-arcade px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-yellow-500/40 text-yellow-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
-                            📋 COPIAR CÓDIGO
-                        </button>
+    <!-- SCREEN 2: LOBBY -->
+    <div id="lobby-screen" class="screen">
+        <div class="card">
+            <div class="room-header">
+                <div class="code-badge">
+                    <div>
+                        <div style="font-size: 0.75rem; color: #aaa;">CÓDIGO DE SALA P2P</div>
+                        <div class="room-code-display arcade-font" id="display-room-code">-----</div>
                     </div>
+                    <button id="btn-copy-code" class="btn btn-cyan" style="padding: 10px 12px;">COPIAR</button>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2">
-                    <select id="select-arena" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white outline-none">
-                        <option value="suzaku">🏯 TEMPLO SUZAKU (NOCHE)</option>
-                        <option value="cyber">🌃 DOJO CYBER NEÓN</option>
-                        <option value="volcano">🌋 CRÁTER VOLCÁNICO</option>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <select id="stage-select" style="width: auto; font-size: 0.95rem;">
+                        <option value="suzaku">Escenario: Templo Suzaku</option>
+                        <option value="cyber">Escenario: Dojo Cyber Neón</option>
+                        <option value="volcano">Escenario: Cráter Volcánico</option>
                     </select>
-                    <button id="btn-leave-room" class="btn-arcade px-4 py-2 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs font-bold cursor-pointer">
-                        SALIR
-                    </button>
+                    <button id="btn-add-bot" class="btn">+ BOT IA</button>
+                    <button id="btn-leave-room" class="btn" style="border-color: #ff2a55; color: #ff2a55;">SALIR</button>
                 </div>
             </div>
 
-            <!-- Controles de Bots del Anfitrión -->
-            <div id="host-controls" class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/70 p-3 rounded-xl border border-slate-800">
-                <div class="text-xs sm:text-sm text-slate-300">
-                    <span class="font-bold text-yellow-400" id="lobby-count">1/8</span> Luchadores listos. Comparte el código o añade Bots IA.
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <button id="btn-add-bot" class="btn-arcade px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer">
-                        + AÑADIR BOT IA
-                    </button>
-                    <button id="btn-fill-bots" class="btn-arcade px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer">
-                        🤖 LLENAR HASTA 8
-                    </button>
-                    <button id="btn-clear-bots" class="btn-arcade px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer">
-                        QUITAR BOTS
-                    </button>
-                </div>
-            </div>
+            <div class="slots-grid" id="lobby-slots"></div>
 
-            <!-- Grid de 8 Slots de Jugadores -->
-            <div id="lobby-slots-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                <!-- Generado dinámicamente -->
-            </div>
-
-            <!-- Botón Iniciar Combate -->
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-800">
-                <p id="lobby-status-msg" class="text-xs text-slate-400">Se requieren al menos 2 luchadores (jugadores o bots) para comenzar.</p>
-                <button id="btn-start-match" class="btn-arcade w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-arcade text-xs sm:text-sm tracking-wider cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                    ⚔️ ¡INICIAR COMBATE!
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div id="lobby-status-text" style="color: var(--accent-cyan); font-size: 0.95rem;">
+                    Esperando jugadores... (Mínimo 2 luchadores)
+                </div>
+                <button id="btn-start-match" class="btn btn-gold" style="padding: 14px 28px; font-size: 0.85rem;">
+                    ¡INICIAR BATALLA!
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== PANTALLA 3: ARENA DE COMBATE (CANVAS + HUD) ==================== -->
-    <div id="screen-game" class="hidden fixed inset-0 z-20 flex flex-col bg-black">
-        <!-- HUD Superior de hasta 8 Jugadores -->
-        <div id="game-hud" class="w-full bg-gradient-to-b from-black/95 via-slate-950/85 to-transparent px-2 sm:px-4 pt-2 pb-3 z-30 pointer-events-none">
-            <div class="max-w-7xl mx-auto flex flex-col gap-1.5">
-                <!-- Barra superior de info de sala y tiempo -->
-                <div class="flex items-center justify-between text-[10px] sm:text-xs font-bold text-slate-300 px-1">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 font-arcade text-[10px]" id="hud-room-code">SALA: -----</span>
-                        <span id="hud-alive-count" class="text-emerald-400">VIVOS: 8/8</span>
-                    </div>
-                    <div class="font-arcade text-sm sm:text-lg text-yellow-400 drop-shadow" id="hud-timer">99</div>
-                    <div class="pointer-events-auto flex items-center gap-2">
-                        <button id="btn-hud-sound" class="px-2 py-1 rounded bg-slate-800/90 border border-slate-600 text-xs hover:bg-slate-700">🔊</button>
-                        <button id="btn-hud-exit" class="px-2.5 py-1 rounded bg-red-900/80 border border-red-500/50 text-red-200 text-xs font-bold hover:bg-red-800">SALIR</button>
-                    </div>
-                </div>
+    <!-- SCREEN 3: GAME ARENA -->
+    <div id="game-screen" class="screen">
+        <div class="hud-overlay" id="hud-container"></div>
+        <canvas id="game-canvas"></canvas>
 
-                <!-- Grid de Barras de Vida y Energía de los 8 Luchadores -->
-                <div id="hud-players-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5">
-                    <!-- Generado dinámicamente -->
-                </div>
-            </div>
+        <div class="game-top-controls">
+            <button id="btn-toggle-sound" class="btn" style="padding: 8px 10px; font-size: 0.6rem;">🔊 SFX</button>
+            <button id="btn-back-lobby" class="btn" style="padding: 8px 10px; font-size: 0.6rem;">LOBBY</button>
         </div>
 
-        <!-- Anuncio Central Arcade (ROUND 1 - FIGHT! / K.O.!) -->
-        <div id="arena-banner" class="hidden fixed inset-0 z-30 flex items-center justify-center pointer-events-none">
-            <div id="arena-banner-text" class="font-arcade text-3xl sm:text-6xl text-center arcade-title px-4 py-2 transform scale-100 transition-transform duration-200">
-                ROUND 1
+        <!-- MOBILE TOUCH PAD -->
+        <div class="touch-controls">
+            <div class="touch-group">
+                <div class="t-btn" data-key="left">◄</div>
+                <div class="t-btn" data-key="right">►</div>
+                <div class="t-btn" data-key="up">▲</div>
+                <div class="t-btn" data-key="down">▼</div>
             </div>
-        </div>
-
-        <!-- Canvas Principal -->
-        <div class="relative flex-1 w-full h-full overflow-hidden">
-            <canvas id="game-canvas"></canvas>
-        </div>
-
-        <!-- Controles Táctiles Responsivos (Móvil / Tablet / Opcional) -->
-        <div id="touch-controls" class="sm:hidden fixed bottom-3 inset-x-3 z-30 flex items-end justify-between pointer-events-none opacity-85">
-            <!-- D-Pad Izquierdo -->
-            <div class="grid grid-cols-3 gap-1.5 w-36 h-36 pointer-events-auto">
-                <div></div>
-                <button data-key="ArrowUp" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▲</button>
-                <div></div>
-                <button data-key="ArrowLeft" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">◀</button>
-                <button data-key="ArrowDown" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▼</button>
-                <button data-key="ArrowRight" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▶</button>
-            </div>
-            <!-- Botones de Acción Derechos -->
-            <div class="grid grid-cols-3 gap-2 pointer-events-auto">
-                <button data-key="KeyL" class="touch-btn w-12 h-12 rounded-full bg-sky-600/80 border-2 border-sky-300 font-bold text-xs flex items-center justify-center">ESC</button>
-                <button data-key="KeyU" class="touch-btn w-12 h-12 rounded-full bg-purple-600/80 border-2 border-purple-300 font-bold text-xs flex items-center justify-center">PODER</button>
-                <button data-key="KeyI" class="touch-btn w-12 h-12 rounded-full bg-red-600/80 border-2 border-red-300 font-bold text-xs flex items-center justify-center">SUPER</button>
-                <button data-key="KeyJ" class="touch-btn w-12 h-12 rounded-full bg-amber-500/80 border-2 border-amber-200 font-bold text-xs flex items-center justify-center">PUÑO</button>
-                <button data-key="KeyK" class="touch-btn w-12 h-12 rounded-full bg-orange-600/80 border-2 border-orange-300 font-bold text-xs flex items-center justify-center">PATADA</button>
+            <div class="touch-group">
+                <div class="t-btn" data-key="punch" style="border-color: #ffcc00;">P</div>
+                <div class="t-btn" data-key="power" style="border-color: #00f0ff;">K</div>
+                <div class="t-btn" data-key="super" style="border-color: #ff2a55;">S</div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== PANTALLA 4: PODIO / RESULTADOS ==================== -->
-    <div id="screen-results" class="hidden fixed inset-0 z-40 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="arcade-panel rounded-2xl w-full max-w-2xl p-5 sm:p-7 flex flex-col gap-5 text-center">
-            <div>
-                <span class="text-xs font-bold uppercase tracking-widest text-yellow-400">FIN DEL COMBATE • RESULTADOS</span>
-                <h2 id="winner-title" class="font-arcade text-2xl sm:text-4xl arcade-title mt-2">¡GANADOR: RYU!</h2>
-            </div>
+    <div id="status-toast"></div>
 
-            <!-- Tabla de Clasificación -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden text-left">
-                <div class="grid grid-cols-12 bg-slate-950 px-3 py-2 text-[11px] font-bold text-slate-400 uppercase">
-                    <div class="col-span-1">#</div>
-                    <div class="col-span-5">Luchador</div>
-                    <div class="col-span-3 text-center">K.O.s</div>
-                    <div class="col-span-3 text-right">Daño Total</div>
-                </div>
-                <div id="results-leaderboard" class="divide-y divide-slate-800/80 max-h-60 overflow-y-auto">
-                    <!-- Filas generadas dinámicamente -->
-                </div>
-            </div>
+<script>
+/**
+ * ============================================================================
+ * 1. CONFIGURACIÓN DE PERSONAJES Y CONSTANTES
+ * ============================================================================
+ */
+const FIGHTERS_DATA = [
+    { id: 'ryu',    name: 'RYU-X',     powerName: 'Hadou Blue',  color: '#00aaff', gi: '#ffffff', headband: '#ff2a55', speed: 5.2, dmg: 1.0, projSpeed: 11 },
+    { id: 'ken',    name: 'KEN-FIRE',  powerName: 'Shoryu Flame',color: '#ff5500', gi: '#e62e2e', headband: '#ffcc00', speed: 5.5, dmg: 1.05,projSpeed: 11.5 },
+    { id: 'chun',   name: 'CHUN-V',    powerName: 'Kikou Volt',  color: '#00f0ff', gi: '#1e62d0', headband: '#ffffff', speed: 6.2, dmg: 0.92,projSpeed: 13 },
+    { id: 'shadow', name: 'AKUMA-Z',   powerName: 'Dark Gohadou',color: '#b829ff', gi: '#241b35', headband: '#ff0055', speed: 5.4, dmg: 1.15,projSpeed: 10.5 },
+    { id: 'cyber',  name: 'CYBER-08',  powerName: 'Plasma Beam', color: '#00ff88', gi: '#1f2937', headband: '#00ff88', speed: 5.6, dmg: 1.0, projSpeed: 14 },
+    { id: 'titan',  name: 'TITAN-G',   powerName: 'Terra Boulder',color:'#d97706', gi: '#451a03', headband: '#fbbf24', speed: 4.3, dmg: 1.28,projSpeed: 9.2 },
+    { id: 'wind',   name: 'RASHID-W',  powerName: 'Aero Tornado',color: '#38bdf8', gi: '#f8fafc', headband: '#0284c7', speed: 6.0, dmg: 0.95,projSpeed: 12.5 },
+    { id: 'toxic',  name: 'VIPER-T',   powerName: 'Acid Venom',  color: '#a3e635', gi: '#1a2e05', headband: '#bef264', speed: 5.3, dmg: 1.08,projSpeed: 11 }
+];
 
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button id="btn-rematch" class="btn-arcade px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-red-600 text-white font-arcade text-xs cursor-pointer">
-                    🔄 REVANCHA INMEDIATA
-                </button>
-                <button id="btn-back-lobby" class="btn-arcade px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-sm cursor-pointer">
-                    VOLVER AL LOBBY DE SALA
-                </button>
-            </div>
-        </div>
-    </div>
+const PEER_PREFIX = 'SB8-ARENA-';
+const STUN_CONFIG = {
+    config: {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+    }
+};
 
-    <!-- ==================== LÓGICA DEL JUEGO + FIREBASE + BROADCASTCHANNEL ==================== -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+const ARENA_WIDTH = 1600;
+const FLOOR_Y = 580;
+const GRAVITY = 0.72;
 
-        // =========================================================================
-        // 1. DEFINICIÓN DE LOS 8 LUCHADORES / ESTILOS ELEMENTALES
-        // =========================================================================
-        const FIGHTER_ARCHETYPES = [
-            {
-                id: 'ryu',
-                name: 'RYU-STYLE',
-                element: 'Energía Azul',
-                powerName: 'Hadouken Azul',
-                superName: 'Shinku Hadouken',
-                primary: '#38bdf8',
-                secondary: '#0284c7',
-                giColor: '#f8fafc',
-                bandColor: '#ef4444',
-                skin: '#f1c27d',
-                icon: '🔵',
-                stats: { atk: 4, spd: 4, pwr: 5 },
-                speed: 5.4,
-                jumpForce: -14.8,
-                projSpeed: 10.5,
-                projColor: '#38bdf8'
-            },
-            {
-                id: 'ken',
-                name: 'KEN-STYLE',
-                element: 'Fuego Carmesí',
-                powerName: 'Hadouken Ígneo',
-                superName: 'Shinryuken Solar',
-                primary: '#f97316',
-                secondary: '#dc2626',
-                giColor: '#dc2626',
-                bandColor: '#facc15',
-                skin: '#f1c27d',
-                icon: '🔥',
-                stats: { atk: 5, spd: 4, pwr: 4 },
-                speed: 5.6,
-                jumpForce: -15.0,
-                projSpeed: 11.0,
-                projColor: '#f97316'
-            },
-            {
-                id: 'chun',
-                name: 'CHUN-STYLE',
-                element: 'Rayo Celeste',
-                powerName: 'Kikoken Relámpago',
-                superName: 'Hoyokusen Eléctrico',
-                primary: '#60a5fa',
-                secondary: '#fde047',
-                giColor: '#2563eb',
-                bandColor: '#f8fafc',
-                skin: '#f5cba7',
-                icon: '⚡',
-                stats: { atk: 3, spd: 5, pwr: 4 },
-                speed: 6.4,
-                jumpForce: -15.6,
-                projSpeed: 12.0,
-                projColor: '#fde047'
-            },
-            {
-                id: 'shadow',
-                name: 'SHADOW-STYLE',
-                element: 'Oscuridad Satsui',
-                powerName: 'Gohadouken Oscuro',
-                superName: 'Messatsu Eclipse',
-                primary: '#c084fc',
-                secondary: '#581c87',
-                giColor: '#1e1b4b',
-                bandColor: '#ef4444',
-                skin: '#d2a679',
-                icon: '🌑',
-                stats: { atk: 5, spd: 4, pwr: 5 },
-                speed: 5.5,
-                jumpForce: -14.8,
-                projSpeed: 10.8,
-                projColor: '#a855f7'
-            },
-            {
-                id: 'cyber',
-                name: 'CYBER-STYLE',
-                element: 'Plasma Neón',
-                powerName: 'Láser de Plasma',
-                superName: 'Cañón Orbital',
-                primary: '#22d3ee',
-                secondary: '#ec4899',
-                giColor: '#0f172a',
-                bandColor: '#22d3ee',
-                skin: '#94a3b8',
-                icon: '🤖',
-                stats: { atk: 4, spd: 5, pwr: 4 },
-                speed: 6.0,
-                jumpForce: -15.0,
-                projSpeed: 13.0,
-                projColor: '#22d3ee'
-            },
-            {
-                id: 'titan',
-                name: 'TITAN-STYLE',
-                element: 'Roca Sísmica',
-                powerName: 'Meteoro Telúrico',
-                superName: 'Cataclismo Pétreo',
-                primary: '#d97706',
-                secondary: '#78350f',
-                giColor: '#78350f',
-                bandColor: '#fbbf24',
-                skin: '#c68642',
-                icon: '🪨',
-                stats: { atk: 5, spd: 3, pwr: 5 },
-                speed: 4.6,
-                jumpForce: -14.0,
-                projSpeed: 9.2,
-                projColor: '#f59e0b'
-            },
-            {
-                id: 'wind',
-                name: 'WIND-STYLE',
-                element: 'Tornado Esmeralda',
-                powerName: 'Cuchilla de Viento',
-                superName: 'Huracán Cortante',
-                primary: '#34d399',
-                secondary: '#059669',
-                giColor: '#065f46',
-                bandColor: '#a7f3d0',
-                skin: '#f1c27d',
-                icon: '🌪️',
-                stats: { atk: 3, spd: 5, pwr: 4 },
-                speed: 6.5,
-                jumpForce: -16.0,
-                projSpeed: 12.5,
-                projColor: '#34d399'
-            },
-            {
-                id: 'toxic',
-                name: 'TOXIC-STYLE',
-                element: 'Ácido Venenoso',
-                powerName: 'Orbe Corrosivo',
-                superName: 'Lluvia Tóxica',
-                primary: '#a3e635',
-                secondary: '#4d7c0f',
-                giColor: '#365314',
-                bandColor: '#bef264',
-                skin: '#d9f99d',
-                icon: '☣️',
-                stats: { atk: 4, spd: 4, pwr: 5 },
-                speed: 5.4,
-                jumpForce: -14.8,
-                projSpeed: 10.2,
-                projColor: '#a3e635'
-            }
-        ];
-
-        const BOT_NAMES = ['KEN_BOT', 'AKUMA_AI', 'VEGA_CPU', 'SAGAT_X', 'GUILE_99', 'BISON_01', 'CAMMY_AI', 'NASH_BOT'];
-
-        // =========================================================================
-        // 2. MOTOR DE AUDIO SINTETIZADO (WEB AUDIO API - SIN ARCHIVOS EXTERNOS)
-        // =========================================================================
-        class ArcadeSoundEngine {
-            constructor() {
-                this.enabled = true;
-                this.ctx = null;
-            }
-            init() {
-                if (!this.ctx) {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (AudioCtx) this.ctx = new AudioCtx();
-                }
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            }
-            toggle() {
-                this.enabled = !this.enabled;
-                return this.enabled;
-            }
-            playTone(freq, endFreq, duration, type = 'square', gainVal = 0.12) {
-                if (!this.enabled) return;
-                this.init();
-                if (!this.ctx) return;
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, now);
-                if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), now + duration);
-                gain.gain.setValueAtTime(gainVal, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start(now);
-                osc.stop(now + duration);
-            }
-            playNoise(duration = 0.15, gainVal = 0.18) {
-                if (!this.enabled) return;
-                this.init();
-                if (!this.ctx) return;
-                const bufferSize = this.ctx.sampleRate * duration;
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = buffer;
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                noise.connect(gain);
-                gain.connect(this.ctx.destination);
-                noise.start();
-            }
-            sfxSelect() { this.playTone(520, 780, 0.08, 'square', 0.08); }
-            sfxPunch() { this.playNoise(0.08, 0.14); this.playTone(180, 60, 0.09, 'triangle', 0.15); }
-            sfxKick() { this.playNoise(0.12, 0.18); this.playTone(140, 45, 0.13, 'sawtooth', 0.16); }
-            sfxBlock() { this.playTone(850, 420, 0.09, 'square', 0.1); }
-            sfxHadouken() {
-                this.playTone(320, 880, 0.14, 'sawtooth', 0.14);
-                setTimeout(() => this.playTone(640, 190, 0.25, 'sine', 0.16), 70);
-            }
-            sfxSuper() {
-                this.playTone(220, 1200, 0.35, 'sawtooth', 0.18);
-                this.playNoise(0.28, 0.2);
-            }
-            sfxClash() {
-                this.playNoise(0.22, 0.25);
-                this.playTone(400, 90, 0.22, 'square', 0.18);
-            }
-            sfxKO() {
-                this.playNoise(0.4, 0.28);
-                this.playTone(240, 55, 0.55, 'sawtooth', 0.22);
-            }
-            sfxFight() {
-                this.playTone(440, 440, 0.1, 'square', 0.12);
-                setTimeout(() => this.playTone(554, 554, 0.1, 'square', 0.12), 110);
-                setTimeout(() => this.playTone(659, 880, 0.28, 'square', 0.15), 220);
-            }
+/**
+ * ============================================================================
+ * 2. SINTETIZADOR DE AUDIO RETRO (WEB AUDIO API)
+ * ============================================================================
+ */
+class SoundFX {
+    constructor() {
+        this.enabled = true;
+        this.ctx = null;
+    }
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        const sfx = new ArcadeSoundEngine();
+    }
+    play(type) {
+        if (!this.enabled) return;
+        this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
 
-        // =========================================================================
-        // 3. GESTIÓN DE SALAS MULTIJUGADOR (FIRESTORE + BROADCASTCHANNEL FALLBACK)
-        // =========================================================================
-        class RoomNetworkManager {
-            constructor() {
-                this.db = null;
-                this.auth = null;
-                this.userId = 'player_' + Math.random().toString(36).substring(2, 10);
-                this.appId = typeof __app_id !== 'undefined' ? __app_id : 'street-brawl-8';
-                this.useFirebase = false;
-                this.channel = new BroadcastChannel('street_brawl_8_rooms');
-                this.localRooms = {}; // Almacén en memoria para pestañas locales
-                this.currentRoomCode = null;
-                this.unsubscribeRoom = null;
-                this.onRoomUpdated = null;
-                this.onCombatStateReceived = null;
-                this.onClientInputReceived = null;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
 
-                this.setupBroadcastChannel();
-            }
-
-            async init() {
-                try {
-                    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                        const firebaseConfig = JSON.parse(__firebase_config);
-                        const app = initializeApp(firebaseConfig);
-                        this.auth = getAuth(app);
-                        this.db = getFirestore(app);
-
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(this.auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(this.auth);
-                        }
-                        if (this.auth.currentUser) {
-                            this.userId = this.auth.currentUser.uid;
-                        }
-                        this.useFirebase = true;
-                        this.updateBadge('● ONLINE (NUBE + LOCAL)', 'emerald');
-                    } else {
-                        this.updateBadge('● MODO LOCAL / PESTAÑAS', 'sky');
-                    }
-                } catch (err) {
-                    console.warn('Usando modo local/BroadcastChannel:', err);
-                    this.useFirebase = false;
-                    this.updateBadge('● MODO LOCAL / PESTAÑAS', 'sky');
-                }
-            }
-
-            updateBadge(text, color) {
-                const badge = document.getElementById('connection-mode-badge');
-                if (!badge) return;
-                badge.textContent = text;
-                badge.className = color === 'emerald'
-                    ? 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    : 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40';
-            }
-
-            setupBroadcastChannel() {
-                this.channel.onmessage = (event) => {
-                    const msg = event.data;
-                    if (!msg || !msg.type) return;
-
-                    if (msg.type === 'ROOM_SYNC' && msg.room) {
-                        this.localRooms[msg.room.code] = msg.room;
-                        if (this.currentRoomCode === msg.room.code && this.onRoomUpdated) {
-                            this.onRoomUpdated(msg.room);
-                        }
-                    } else if (msg.type === 'REQUEST_ROOM' && this.currentRoomCode === msg.code) {
-                        const room = this.localRooms[msg.code];
-                        if (room && room.hostId === this.userId) {
-                            this.channel.postMessage({ type: 'ROOM_SYNC', room });
-                        }
-                    } else if (msg.type === 'JOIN_REQUEST' && this.currentRoomCode === msg.code) {
-                        const room = this.localRooms[msg.code];
-                        if (room && room.hostId === this.userId) {
-                            this.handleGuestJoinLocally(room, msg.player);
-                        }
-                    } else if (msg.type === 'COMBAT_SNAPSHOT' && this.currentRoomCode === msg.code) {
-                        if (this.onCombatStateReceived && msg.senderId !== this.userId) {
-                            this.onCombatStateReceived(msg.payload);
-                        }
-                    } else if (msg.type === 'CLIENT_INPUT' && this.currentRoomCode === msg.code) {
-                        if (this.onClientInputReceived && msg.senderId !== this.userId) {
-                            this.onClientInputReceived(msg.senderId, msg.input);
-                        }
-                    }
-                };
-            }
-
-            generateCode() {
-                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                let code = '';
-                for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-                return code;
-            }
-
-            getRoomDocRef(code) {
-                return doc(this.db, 'artifacts', this.appId, 'public', 'data', 'brawl_rooms', code);
-            }
-
-            async createRoom(playerProfile, arena = 'suzaku') {
-                const code = this.generateCode();
-                const hostSlot = {
-                    id: this.userId,
-                    name: playerProfile.name,
-                    archetypeId: playerProfile.archetypeId,
-                    isBot: false,
-                    isHost: true,
-                    ready: true
-                };
-                const roomData = {
-                    code,
-                    hostId: this.userId,
-                    arena,
-                    status: 'lobby', // 'lobby' | 'playing'
-                    slots: [hostSlot],
-                    updatedAt: Date.now()
-                };
-
-                this.currentRoomCode = code;
-                this.localRooms[code] = roomData;
-
-                if (this.useFirebase && this.db) {
-                    try {
-                        await setDoc(this.getRoomDocRef(code), roomData);
-                    } catch (e) {
-                        console.warn('Fallback local al crear sala:', e);
-                    }
-                }
-                this.subscribeToRoom(code);
-                this.channel.postMessage({ type: 'ROOM_SYNC', room: roomData });
-                return roomData;
-            }
-
-            async joinRoom(code, playerProfile) {
-                const cleanCode = code.trim().toUpperCase();
-                if (cleanCode.length < 4) throw new Error('Código de sala inválido.');
-
-                const guestSlot = {
-                    id: this.userId,
-                    name: playerProfile.name,
-                    archetypeId: playerProfile.archetypeId,
-                    isBot: false,
-                    isHost: false,
-                    ready: true
-                };
-
-                // 1. Intentar Firestore primero si está activo
-                if (this.useFirebase && this.db) {
-                    try {
-                        const ref = this.getRoomDocRef(cleanCode);
-                        const snap = await getDoc(ref);
-                        if (snap.exists()) {
-                            const room = snap.data();
-                            if (room.status === 'playing') throw new Error('La partida ya está en curso.');
-                            const existingIdx = room.slots.findIndex(s => s.id === this.userId);
-                            if (existingIdx >= 0) {
-                                room.slots[existingIdx] = guestSlot;
-                            } else {
-                                if (room.slots.length >= 8) {
-                                    // Reemplazar un bot si está llena
-                                    const botIdx = room.slots.findIndex(s => s.isBot);
-                                    if (botIdx >= 0) room.slots[botIdx] = guestSlot;
-                                    else throw new Error('La sala está llena (8/8 jugadores).');
-                                } else {
-                                    room.slots.push(guestSlot);
-                                }
-                            }
-                            room.updatedAt = Date.now();
-                            await setDoc(ref, room);
-                            this.currentRoomCode = cleanCode;
-                            this.localRooms[cleanCode] = room;
-                            this.subscribeToRoom(cleanCode);
-                            return room;
-                        }
-                    } catch (err) {
-                        if (err.message.includes('llena') || err.message.includes('curso')) throw err;
-                    }
-                }
-
-                // 2. Fallback BroadcastChannel (entre pestañas del navegador)
-                this.currentRoomCode = cleanCode;
-                this.channel.postMessage({ type: 'REQUEST_ROOM', code: cleanCode });
-                await new Promise(r => setTimeout(r, 250));
-
-                const localRoom = this.localRooms[cleanCode];
-                if (!localRoom) {
-                    this.currentRoomCode = null;
-                    throw new Error(`No se encontró la sala "${cleanCode}". Verifica el código.`);
-                }
-                if (localRoom.slots.length >= 8 && !localRoom.slots.some(s => s.isBot)) {
-                    this.currentRoomCode = null;
-                    throw new Error('La sala está llena (8/8).');
-                }
-                this.channel.postMessage({ type: 'JOIN_REQUEST', code: cleanCode, player: guestSlot });
-                return localRoom;
-            }
-
-            handleGuestJoinLocally(room, guestSlot) {
-                const idx = room.slots.findIndex(s => s.id === guestSlot.id);
-                if (idx >= 0) {
-                    room.slots[idx] = guestSlot;
-                } else if (room.slots.length < 8) {
-                    room.slots.push(guestSlot);
-                } else {
-                    const botIdx = room.slots.findIndex(s => s.isBot);
-                    if (botIdx >= 0) room.slots[botIdx] = guestSlot;
-                }
-                room.updatedAt = Date.now();
-                this.saveRoomState(room);
-            }
-
-            async saveRoomState(room) {
-                if (!room) return;
-                room.updatedAt = Date.now();
-                this.localRooms[room.code] = room;
-                this.channel.postMessage({ type: 'ROOM_SYNC', room });
-                if (this.onRoomUpdated) this.onRoomUpdated(room);
-
-                if (this.useFirebase && this.db) {
-                    try {
-                        await setDoc(this.getRoomDocRef(room.code), room);
-                    } catch (e) {
-                        console.warn('Error sincronizando sala en Firestore:', e);
-                    }
-                }
-            }
-
-            subscribeToRoom(code) {
-                if (this.unsubscribeRoom) {
-                    this.unsubscribeRoom();
-                    this.unsubscribeRoom = null;
-                }
-                if (this.useFirebase && this.db) {
-                    const ref = this.getRoomDocRef(code);
-                    this.unsubscribeRoom = onSnapshot(ref, (snap) => {
-                        if (snap.exists()) {
-                            const data = snap.data();
-                            this.localRooms[code] = data;
-                            if (this.onRoomUpdated) this.onRoomUpdated(data);
-                        }
-                    }, (err) => {
-                        console.warn('Snapshot listener warning:', err);
-                    });
-                }
-            }
-
-            broadcastCombatSnapshot(payload) {
-                if (!this.currentRoomCode) return;
-                this.channel.postMessage({
-                    type: 'COMBAT_SNAPSHOT',
-                    code: this.currentRoomCode,
-                    senderId: this.userId,
-                    payload
-                });
-            }
-
-            sendClientInput(input) {
-                if (!this.currentRoomCode) return;
-                this.channel.postMessage({
-                    type: 'CLIENT_INPUT',
-                    code: this.currentRoomCode,
-                    senderId: this.userId,
-                    input
-                });
-            }
-
-            leaveRoom() {
-                if (this.unsubscribeRoom) {
-                    this.unsubscribeRoom();
-                    this.unsubscribeRoom = null;
-                }
-                this.currentRoomCode = null;
-            }
+        if (type === 'punch') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            osc.start(now);
+            osc.stop(now + 0.12);
+        } else if (type === 'power') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(140, now + 0.25);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else if (type === 'super') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.45);
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+            osc.start(now);
+            osc.stop(now + 0.45);
+        } else if (type === 'ko') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, now);
+            osc.frequency.linearRampToValueAtTime(40, now + 0.6);
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc.start(now);
+            osc.stop(now + 0.6);
         }
+    }
+}
+const sfx = new SoundFX();
 
-        const net = new RoomNetworkManager();
+/**
+ * ============================================================================
+ * 3. ESTADO GLOBAL Y RED P2P (PEERJS)
+ * ============================================================================
+ */
+const state = {
+    peer: null,
+    isHost: false,
+    roomCode: '',
+    myId: '',
+    myName: 'Fighter',
+    myChar: 'ryu',
+    stage: 'suzaku',
+    connections: {}, // host -> { peerId: DataConnection }
+    hostConn: null,  // client -> DataConnection
+    slots: Array(8).fill(null), // { id, name, charId, isBot, ready }
+    inGame: false,
+    winnerText: '',
+    players: [],
+    projectiles: [],
+    particles: [],
+    shake: 0,
+    hitStop: 0
+};
 
-        // =========================================================================
-        // 4. ESTADO GLOBAL DE INTERFAZ Y LOBBY
-        // =========================================================================
-        const state = {
-            playerName: 'LUCHADOR_1',
-            selectedArchetypeId: 'ryu',
-            currentRoom: null,
-            gameInstance: null
+const localInput = { left: false, right: false, up: false, down: false, punch: false, power: false, super: false };
+const remoteInputs = {}; // host stores inputs by player id
+
+function showToast(msg) {
+    const t = document.getElementById('status-toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+}
+
+function switchScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+/**
+ * ============================================================================
+ * 4. LÓGICA DE CONEXIÓN P2P (HOST Y CLIENTE)
+ * ============================================================================
+ */
+function createRoomAsHost() {
+    sfx.init();
+    state.myName = document.getElementById('player-name').value.trim() || 'Host';
+    state.isHost = true;
+    state.roomCode = generateRoomCode();
+    state.connections = {};
+    state.slots = Array(8).fill(null);
+
+    showToast('Creando sala P2P en la red...');
+    const peerId = PEER_PREFIX + state.roomCode;
+    state.peer = new Peer(peerId, STUN_CONFIG);
+
+    state.peer.on('open', (id) => {
+        state.myId = id;
+        state.slots[0] = {
+            id: state.myId,
+            name: state.myName,
+            charId: state.myChar,
+            isBot: false
         };
+        document.getElementById('display-room-code').textContent = state.roomCode;
+        updateLobbyControls();
+        renderLobbySlots();
+        switchScreen('lobby-screen');
+        showToast('¡Sala creada! Comparte el código: ' + state.roomCode);
+    });
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const el = document.createElement('div');
-            const colors = {
-                info: 'bg-slate-900 border-sky-400 text-sky-200',
-                success: 'bg-emerald-950 border-emerald-400 text-emerald-200',
-                error: 'bg-red-950 border-red-500 text-red-200',
-                warn: 'bg-amber-950 border-yellow-400 text-yellow-200'
+    state.peer.on('connection', (conn) => {
+        conn.on('open', () => {
+            if (state.inGame) {
+                conn.send({ type: 'error', msg: 'La partida ya está en curso.' });
+                setTimeout(() => conn.close(), 300);
+                return;
+            }
+            const emptyIndex = state.slots.findIndex(s => s === null);
+            if (emptyIndex === -1) {
+                conn.send({ type: 'error', msg: 'La sala está llena (8/8).' });
+                setTimeout(() => conn.close(), 300);
+                return;
+            }
+            state.connections[conn.peer] = conn;
+            remoteInputs[conn.peer] = { left: false, right: false, up: false, down: false, punch: false, power: false, super: false };
+
+            conn.on('data', (data) => handleHostData(conn.peer, data));
+            conn.on('close', () => {
+                delete state.connections[conn.peer];
+                delete remoteInputs[conn.peer];
+                const idx = state.slots.findIndex(s => s && s.id === conn.peer);
+                if (idx !== -1) state.slots[idx] = null;
+                if (state.inGame) {
+                    state.players = state.players.filter(p => p.id !== conn.peer);
+                }
+                broadcastLobby();
+            });
+        });
+    });
+
+    state.peer.on('error', (err) => {
+        console.error(err);
+        showToast('Error P2P: ' + err.type + '. Intenta crear de nuevo.');
+    });
+}
+
+function joinRoomAsClient() {
+    sfx.init();
+    const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+    if (code.length !== 5) {
+        showToast('Ingresa un código válido de 5 caracteres.');
+        return;
+    }
+
+    state.myName = document.getElementById('player-name').value.trim() || 'Player';
+    state.isHost = false;
+    state.roomCode = code;
+    showToast('Conectando con la sala ' + code + '...');
+
+    state.peer = new Peer(STUN_CONFIG);
+
+    state.peer.on('open', (id) => {
+        state.myId = id;
+        const conn = state.peer.connect(PEER_PREFIX + code, { reliable: false });
+        state.hostConn = conn;
+
+        conn.on('open', () => {
+            conn.send({
+                type: 'join_info',
+                name: state.myName,
+                charId: state.myChar
+            });
+            document.getElementById('display-room-code').textContent = state.roomCode;
+            updateLobbyControls();
+            switchScreen('lobby-screen');
+            showToast('¡Conectado a la sala ' + code + '!');
+        });
+
+        conn.on('data', (data) => handleClientData(data));
+
+        conn.on('close', () => {
+            showToast('Desconectado del Host.');
+            leaveRoom();
+        });
+    });
+
+    state.peer.on('error', (err) => {
+        console.error(err);
+        showToast('No se encontró la sala ' + code + ' o hubo error de red.');
+    });
+}
+
+function handleHostData(peerId, data) {
+    if (data.type === 'join_info') {
+        const emptyIdx = state.slots.findIndex(s => s === null);
+        if (emptyIdx !== -1) {
+            state.slots[emptyIdx] = {
+                id: peerId,
+                name: data.name.slice(0, 12),
+                charId: data.charId,
+                isBot: false
             };
-            el.className = `px-4 py-2.5 rounded-xl border-2 shadow-xl text-xs sm:text-sm font-bold transition-all duration-300 ${colors[type] || colors.info}`;
-            el.textContent = message;
-            container.appendChild(el);
-            setTimeout(() => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateX(20px)';
-                setTimeout(() => el.remove(), 300);
-            }, 3000);
+            broadcastLobby();
         }
+    } else if (data.type === 'input') {
+        remoteInputs[peerId] = data.input;
+    }
+}
 
-        function switchScreen(screenName) {
-            ['screen-menu', 'screen-lobby', 'screen-game', 'screen-results'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(`screen-${screenName}`).classList.remove('hidden');
-        }
+function handleClientData(data) {
+    if (data.type === 'error') {
+        showToast(data.msg);
+        leaveRoom();
+    } else if (data.type === 'lobby_update') {
+        state.slots = data.slots;
+        state.stage = data.stage;
+        document.getElementById('stage-select').value = state.stage;
+        renderLobbySlots();
+    } else if (data.type === 'start_game') {
+        state.stage = data.stage;
+        state.inGame = true;
+        state.winnerText = '';
+        switchScreen('game-screen');
+        buildHud(data.players);
+    } else if (data.type === 'game_state') {
+        state.players = data.players;
+        state.projectiles = data.projectiles;
+        state.particles = data.particles;
+        state.winnerText = data.winnerText;
+        updateHud();
+    } else if (data.type === 'sfx') {
+        sfx.play(data.sound);
+    } else if (data.type === 'back_lobby') {
+        state.inGame = false;
+        switchScreen('lobby-screen');
+        renderLobbySlots();
+    }
+}
 
-        // Renderizar tarjetas de los 8 personajes en el menú principal
-        function renderFighterGrid() {
-            const grid = document.getElementById('fighter-grid');
-            grid.innerHTML = '';
-            FIGHTER_ARCHETYPES.forEach(f => {
-                const isSelected = f.id === state.selectedArchetypeId;
-                const card = document.createElement('button');
-                card.type = 'button';
-                card.className = `fighter-card rounded-xl p-2.5 bg-slate-900/90 border-2 ${isSelected ? 'selected border-yellow-400' : 'border-slate-800 hover:border-slate-600'} flex flex-col items-center text-center gap-1 cursor-pointer`;
-                card.innerHTML = `
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl shadow-inner" style="background: linear-gradient(135deg, ${f.primary}33, ${f.secondary}66); border: 1px solid ${f.primary}">
-                        ${f.icon}
+function broadcastToClients(payload) {
+    if (!state.isHost) return;
+    Object.values(state.connections).forEach(conn => {
+        if (conn.open) conn.send(payload);
+    });
+}
+
+function broadcastLobby() {
+    renderLobbySlots();
+    broadcastToClients({
+        type: 'lobby_update',
+        slots: state.slots,
+        stage: state.stage
+    });
+}
+
+function leaveRoom() {
+    if (state.peer) {
+        state.peer.destroy();
+        state.peer = null;
+    }
+    state.inGame = false;
+    state.connections = {};
+    state.hostConn = null;
+    switchScreen('menu-screen');
+}
+
+/**
+ * ============================================================================
+ * 5. INTERFAZ DEL LOBBY Y SELECTOR DE LUCHADORES
+ * ============================================================================
+ */
+function initCharSelector() {
+    const container = document.getElementById('char-selector');
+    container.innerHTML = '';
+    FIGHTERS_DATA.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'char-card' + (f.id === state.myChar ? ' selected' : '');
+        div.innerHTML = `
+            <div class="char-avatar" style="background:${f.gi}; color:${f.color}; border-color:${f.color};">
+                ${f.name[0]}
+            </div>
+            <div class="char-name">${f.name}</div>
+            <div class="char-power">${f.powerName}</div>
+        `;
+        div.onclick = () => {
+            state.myChar = f.id;
+            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+            div.classList.add('selected');
+        };
+        container.appendChild(div);
+    });
+}
+
+function updateLobbyControls() {
+    document.getElementById('stage-select').disabled = !state.isHost;
+    document.getElementById('btn-add-bot').style.display = state.isHost ? 'inline-flex' : 'none';
+    document.getElementById('btn-start-match').style.display = state.isHost ? 'inline-flex' : 'none';
+    document.getElementById('btn-back-lobby').style.display = state.isHost ? 'inline-flex' : 'none';
+}
+
+function renderLobbySlots() {
+    const grid = document.getElementById('lobby-slots');
+    grid.innerHTML = '';
+    let activeCount = 0;
+
+    state.slots.forEach((slot, index) => {
+        const div = document.createElement('div');
+        if (slot) {
+            activeCount++;
+            const fData = FIGHTERS_DATA.find(f => f.id === slot.charId) || FIGHTERS_DATA[0];
+            div.className = 'player-slot ' + (slot.isBot ? 'bot' : 'occupied');
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="slot-tag" style="color:${slot.isBot ? '#d8b4fe' : '#00f0ff'};">
+                        ${slot.isBot ? 'BOT IA' : (index === 0 ? 'HOST P1' : 'JUGADOR ' + (index + 1))}
+                    </span>
+                    ${(state.isHost && index !== 0) ? `<button onclick="removeSlot(${index})" style="background:none;border:none;color:#ff2a55;cursor:pointer;font-weight:bold;">✕</button>` : ''}
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                    <div class="char-avatar" style="margin:0; background:${fData.gi}; color:${fData.color}; border-color:${fData.color};">
+                        ${fData.name[0]}
                     </div>
-                    <div class="font-bold text-xs text-white tracking-tight truncate w-full">${f.name}</div>
-                    <div class="text-[10px] font-semibold truncate w-full" style="color: ${f.primary}">${f.element}</div>
-                `;
-                card.onclick = () => {
-                    sfx.sfxSelect();
-                    state.selectedArchetypeId = f.id;
-                    renderFighterGrid();
-                    updateFighterDetails();
-                };
-                grid.appendChild(card);
-            });
+                    <div>
+                        <div style="font-weight:700; font-size:1rem;">${slot.name}</div>
+                        <div style="font-size:0.75rem; color:${fData.color};">${fData.name} • ${fData.powerName}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            div.className = 'player-slot';
+            div.innerHTML = `
+                <span class="slot-tag" style="color:#666;">ESPACIO ${index + 1}</span>
+                <div style="text-align:center; color:#555; font-size:0.85rem; margin:auto 0;">Vacío</div>
+            `;
         }
+        grid.appendChild(div);
+    });
 
-        function updateFighterDetails() {
-            const f = FIGHTER_ARCHETYPES.find(x => x.id === state.selectedArchetypeId) || FIGHTER_ARCHETYPES[0];
-            document.getElementById('selected-fighter-badge').textContent = `${f.name} • ${f.element.toUpperCase()}`;
-            const avatar = document.getElementById('detail-avatar');
-            avatar.textContent = f.icon;
-            avatar.style.background = `linear-gradient(135deg, ${f.primary}, ${f.secondary})`;
-            document.getElementById('detail-name').textContent = f.name;
-            document.getElementById('detail-power').textContent = `Poder: ${f.powerName} • Súper: ${f.superName}`;
-            document.getElementById('stat-atk').textContent = '★'.repeat(f.stats.atk) + '☆'.repeat(5 - f.stats.atk);
-            document.getElementById('stat-spd').textContent = '★'.repeat(f.stats.spd) + '☆'.repeat(5 - f.stats.spd);
-            document.getElementById('stat-pwr').textContent = '★'.repeat(f.stats.pwr) + '☆'.repeat(5 - f.stats.pwr);
+    const statusText = document.getElementById('lobby-status-text');
+    const startBtn = document.getElementById('btn-start-match');
+    if (activeCount < 2) {
+        statusText.textContent = `Jugadores: ${activeCount}/8 • Agrega un Bot IA o espera a tus amigos.`;
+        startBtn.disabled = true;
+    } else {
+        statusText.textContent = `¡Listos para pelear! (${activeCount}/8 luchadores en sala)`;
+        startBtn.disabled = false;
+    }
+}
+
+window.removeSlot = function(index) {
+    if (!state.isHost || index === 0) return;
+    const slot = state.slots[index];
+    if (slot && !slot.isBot && state.connections[slot.id]) {
+        state.connections[slot.id].close();
+    }
+    state.slots[index] = null;
+    broadcastLobby();
+};
+
+function addBotSlot() {
+    if (!state.isHost) return;
+    const emptyIdx = state.slots.findIndex(s => s === null);
+    if (emptyIdx === -1) {
+        showToast('La sala ya tiene 8 luchadores.');
+        return;
+    }
+    const randomFighter = FIGHTERS_DATA[Math.floor(Math.random() * FIGHTERS_DATA.length)];
+    state.slots[emptyIdx] = {
+        id: 'bot_' + Date.now() + '_' + emptyIdx,
+        name: 'CPU-' + randomFighter.name.split('-')[0],
+        charId: randomFighter.id,
+        isBot: true
+    };
+    broadcastLobby();
+}
+
+/**
+ * ============================================================================
+ * 6. MOTOR DE COMBATE ARCADE (HOST AUTHORITATIVE)
+ * ============================================================================
+ */
+function startMatch() {
+    if (!state.isHost) return;
+    const activeSlots = state.slots.filter(s => s !== null);
+    if (activeSlots.length < 2) return;
+
+    state.inGame = true;
+    state.winnerText = '';
+    state.projectiles = [];
+    state.particles = [];
+    state.shake = 0;
+    state.hitStop = 0;
+
+    const spacing = (ARENA_WIDTH - 300) / (activeSlots.length + 1);
+    state.players = activeSlots.map((slot, i) => {
+        const fData = FIGHTERS_DATA.find(f => f.id === slot.charId) || FIGHTERS_DATA[0];
+        const startX = 150 + spacing * (i + 1);
+        return {
+            id: slot.id,
+            name: slot.name,
+            charId: slot.charId,
+            isBot: slot.isBot,
+            x: startX,
+            y: FLOOR_Y,
+            vx: 0,
+            vy: 0,
+            facing: startX < ARENA_WIDTH / 2 ? 1 : -1,
+            hp: 100,
+            maxHp: 100,
+            mp: 25,
+            maxMp: 100,
+            blocking: false,
+            attackTimer: 0,
+            attackType: '', // 'punch', 'power', 'super'
+            cooldown: 0,
+            hurtTimer: 0,
+            alive: true,
+            kills: 0,
+            animFrame: 0,
+            speed: fData.speed,
+            dmg: fData.dmg,
+            projSpeed: fData.projSpeed,
+            color: fData.color,
+            gi: fData.gi,
+            headband: fData.headband
+        };
+    });
+
+    switchScreen('game-screen');
+    buildHud(state.players);
+    broadcastToClients({
+        type: 'start_game',
+        stage: state.stage,
+        players: state.players
+    });
+}
+
+function buildHud(players) {
+    const hud = document.getElementById('hud-container');
+    hud.innerHTML = '';
+    players.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'hud-card';
+        card.id = 'hud-' + p.id;
+        card.innerHTML = `
+            <div class="hud-top">
+                <span style="color:${p.color};">${p.name}</span>
+                <span id="hud-hp-txt-${p.id}">100%</span>
+            </div>
+            <div class="bar-bg"><div class="hp-fill" id="hud-hp-${p.id}" style="width:100%;"></div></div>
+            <div class="bar-bg" style="height:4px;"><div class="mp-fill" id="hud-mp-${p.id}" style="width:25%;"></div></div>
+        `;
+        hud.appendChild(card);
+    });
+}
+
+function updateHud() {
+    state.players.forEach(p => {
+        const card = document.getElementById('hud-' + p.id);
+        if (!card) return;
+        if (!p.alive) card.classList.add('dead');
+        const hpPct = Math.max(0, Math.ceil((p.hp / p.maxHp) * 100));
+        const mpPct = Math.min(100, Math.floor((p.mp / p.maxMp) * 100));
+        document.getElementById('hud-hp-' + p.id).style.width = hpPct + '%';
+        document.getElementById('hud-mp-' + p.id).style.width = mpPct + '%';
+        document.getElementById('hud-hp-txt-' + p.id).textContent = p.alive ? hpPct + '%' : 'K.O.';
+    });
+}
+
+function spawnParticles(x, y, color, count = 12) {
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 7;
+        state.particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 2,
+            life: 18 + Math.random() * 14,
+            maxLife: 32,
+            color,
+            size: 3 + Math.random() * 5
+        });
+    }
+}
+
+function computeBotInput(bot) {
+    const input = { left: false, right: false, up: false, down: false, punch: false, power: false, super: false };
+    const targets = state.players.filter(p => p.alive && p.id !== bot.id);
+    if (targets.length === 0) return input;
+
+    // Buscar rival más cercano
+    let nearest = targets[0];
+    let minDist = Math.abs(nearest.x - bot.x);
+    for (const t of targets) {
+        const d = Math.abs(t.x - bot.x);
+        if (d < minDist) {
+            minDist = d;
+            nearest = t;
         }
+    }
 
-        // Actualizar interfaz del Lobby de 8 slots
-        function renderLobby(room) {
-            if (!room) return;
-            state.currentRoom = room;
-            document.getElementById('lobby-room-code').textContent = room.code;
-            document.getElementById('lobby-count').textContent = `${room.slots.length}/8`;
-            document.getElementById('select-arena').value = room.arena || 'suzaku';
+    const dx = nearest.x - bot.x;
+    if (Math.abs(dx) > 95) {
+        if (dx > 0) input.right = true;
+        else input.left = true;
+    }
 
-            const isHost = room.hostId === net.userId;
-            document.getElementById('host-controls').style.display = isHost ? 'flex' : 'none';
-            document.getElementById('select-arena').disabled = !isHost;
+    if (Math.random() < 0.025 && bot.y >= FLOOR_Y) input.up = true;
+    if (Math.random() < 0.04) input.down = true;
 
-            const grid = document.getElementById('lobby-slots-grid');
-            grid.innerHTML = '';
+    if (bot.mp >= 100 && Math.abs(dx) < 600 && Math.random() < 0.15) {
+        input.super = true;
+    } else if (Math.abs(dx) < 110 && Math.random() < 0.12) {
+        input.punch = true;
+    } else if (Math.abs(dx) >= 180 && Math.abs(dx) < 750 && Math.random() < 0.05) {
+        input.power = true;
+    }
+    return input;
+}
 
-            for (let i = 0; i < 8; i++) {
-                const slot = room.slots[i];
-                const card = document.createElement('div');
-                if (slot) {
-                    const arch = FIGHTER_ARCHETYPES.find(a => a.id === slot.archetypeId) || FIGHTER_ARCHETYPES[i % 8];
-                    const isMe = slot.id === net.userId;
-                    card.className = `rounded-xl p-3 bg-slate-900/95 border-2 ${isMe ? 'border-yellow-400' : 'border-slate-700'} flex items-center justify-between gap-2 relative`;
-                    card.innerHTML = `
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-lg border" style="background:${arch.primary}22; border-color:${arch.primary}">
-                                ${arch.icon}
-                            </div>
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[10px] font-arcade text-slate-400">P${i + 1}</span>
-                                    <span class="font-bold text-sm text-white truncate">${slot.name}</span>
-                                </div>
-                                <div class="text-[11px] font-semibold truncate" style="color:${arch.primary}">${arch.name}</div>
-                                <div class="mt-0.5 flex gap-1">
-                                    ${slot.isHost ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-yellow-500/20 text-yellow-300 font-bold">ANFITRIÓN</span>' : ''}
-                                    ${slot.isBot ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">BOT IA</span>' : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">JUGADOR</span>'}
-                                </div>
-                            </div>
-                        </div>
-                        ${isHost && slot.isBot ? `<button data-remove-idx="${i}" class="remove-bot-btn px-2 py-1 rounded bg-red-950 hover:bg-red-800 text-red-300 text-xs font-bold cursor-pointer">✕</button>` : ''}
-                    `;
-                } else {
-                    card.className = 'rounded-xl p-3 bg-slate-950/60 border-2 border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-xs font-bold h-[74px]';
-                    card.textContent = `SLOT ${i + 1} • VACÍO`;
-                }
-                grid.appendChild(card);
-            }
+function updateSimulation() {
+    if (!state.inGame || !state.isHost) return;
 
-            // Listeners para quitar bots individuales
-            document.querySelectorAll('.remove-bot-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const idx = parseInt(btn.getAttribute('data-remove-idx'), 10);
-                    room.slots.splice(idx, 1);
-                    sfx.sfxSelect();
-                    net.saveRoomState(room);
-                };
-            });
+    if (state.hitStop > 0) {
+        state.hitStop--;
+        return;
+    }
 
-            const startBtn = document.getElementById('btn-start-match');
-            if (isHost) {
-                startBtn.disabled = room.slots.length < 2;
-                document.getElementById('lobby-status-msg').textContent = room.slots.length < 2
-                    ? 'Añade al menos 1 Bot IA o espera a otro jugador para iniciar.'
-                    : `¡Todo listo! ${room.slots.length} luchadores entrarán a la arena.`;
+    if (state.shake > 0) state.shake *= 0.85;
+
+    // 1. Actualizar Jugadores
+    for (const p of state.players) {
+        if (!p.alive) continue;
+
+        let inp = localInput;
+        if (p.isBot) inp = computeBotInput(p);
+        else if (p.id !== state.myId) inp = remoteInputs[p.id] || localInput;
+
+        if (p.cooldown > 0) p.cooldown--;
+        if (p.attackTimer > 0) p.attackTimer--;
+        if (p.hurtTimer > 0) p.hurtTimer--;
+
+        p.blocking = inp.down && p.y >= FLOOR_Y && p.attackTimer === 0 && p.hurtTimer === 0;
+
+        // Movimiento horizontal
+        if (!p.blocking && p.hurtTimer === 0) {
+            if (inp.left) {
+                p.vx = -p.speed;
+                p.facing = -1;
+                p.animFrame += 0.25;
+            } else if (inp.right) {
+                p.vx = p.speed;
+                p.facing = 1;
+                p.animFrame += 0.25;
             } else {
-                startBtn.disabled = true;
-                startBtn.textContent = 'ESPERANDO AL ANFITRIÓN...';
-                document.getElementById('lobby-status-msg').textContent = 'El anfitrión iniciará el combate pronto.';
+                p.vx *= 0.72;
             }
 
-            // Si el anfitrión inició la partida, sincronizar transición a la arena
-            if (room.status === 'playing' && document.getElementById('screen-game').classList.contains('hidden')) {
-                launchArena(room);
+            // Salto
+            if (inp.up && p.y >= FLOOR_Y) {
+                p.vy = -15.5;
             }
+        } else {
+            p.vx *= 0.75;
         }
 
-        function addBotToRoom() {
-            const room = state.currentRoom;
-            if (!room || room.slots.length >= 8) return;
-            const usedArchetypes = room.slots.map(s => s.archetypeId);
-            const available = FIGHTER_ARCHETYPES.filter(a => !usedArchetypes.includes(a.id));
-            const chosenArch = available.length > 0 ? available[0] : FIGHTER_ARCHETYPES[room.slots.length % 8];
-            const usedNames = room.slots.map(s => s.name);
-            const botName = BOT_NAMES.find(n => !usedNames.includes(n)) || `BOT_${room.slots.length + 1}`;
+        // Gravedad y límites
+        p.vy += GRAVITY;
+        p.x += p.vx;
+        p.y += p.vy;
 
-            room.slots.push({
-                id: 'bot_' + Math.random().toString(36).substring(2, 8),
-                name: botName,
-                archetypeId: chosenArch.id,
-                isBot: true,
-                isHost: false,
-                ready: true
-            });
-            sfx.sfxSelect();
-            net.saveRoomState(room);
+        if (p.y >= FLOOR_Y) {
+            p.y = FLOOR_Y;
+            p.vy = 0;
         }
+        p.x = Math.max(60, Math.min(ARENA_WIDTH - 60, p.x));
 
-        // =========================================================================
-        // 5. MOTOR DE COMBATE ARCADE 2D (HASTA 8 JUGADORES SIMULTÁNEOS)
-        // =========================================================================
-        class StreetBrawlEngine {
-            constructor(canvas, room, localUserId) {
-                this.canvas = canvas;
-                this.ctx = canvas.getContext('2d');
-                this.room = room;
-                this.localUserId = localUserId;
-                this.isHost = room.hostId === localUserId;
+        // Regeneración pasiva de energía
+        p.mp = Math.min(p.maxMp, p.mp + 0.08);
 
-                // Dimensiones lógicas de la arena (escalables con cámara dinámica)
-                this.worldWidth = 1750;
-                this.worldHeight = 720;
-                this.groundY = 615;
-
-                // Plataformas elevadas para batallas dinámicas de 8 jugadores
-                this.platforms = [
-                    { x: 260, y: 455, w: 320, h: 18 },
-                    { x: 1170, y: 455, w: 320, h: 18 },
-                    { x: 715, y: 345, w: 320, h: 18 }
-                ];
-
-                this.fighters = [];
-                this.projectiles = [];
-                this.particles = [];
-                this.floatingTexts = [];
-                this.keys = {};
-                this.remoteInputs = {};
-
-                this.camera = { x: this.worldWidth / 2, y: this.worldHeight / 2, zoom: 1, shake: 0 };
-                this.hitStopFrames = 0;
-                this.timer = 99;
-                this.timerAccum = 0;
-                this.matchState = 'intro'; // 'intro' | 'fighting' | 'ko_slowmo' | 'ended'
-                this.running = false;
-                this.lastTime = 0;
-                this.syncAccum = 0;
-
-                this.initFighters();
-                this.buildHUD();
-                this.bindInputs();
-                this.resize();
-            }
-
-            initFighters() {
-                const count = this.room.slots.length;
-                const spacing = (this.worldWidth - 360) / Math.max(1, count - 1);
-
-                this.fighters = this.room.slots.map((slot, idx) => {
-                    const arch = FIGHTER_ARCHETYPES.find(a => a.id === slot.archetypeId) || FIGHTER_ARCHETYPES[idx % 8];
-                    const spawnX = count === 1 ? this.worldWidth / 2 : 180 + idx * spacing;
-                    return {
-                        id: slot.id,
-                        slotIndex: idx,
-                        name: slot.name,
-                        isBot: slot.isBot,
-                        archetype: arch,
-                        x: spawnX,
-                        y: this.groundY,
-                        vx: 0,
-                        vy: 0,
-                        width: 54,
-                        height: 108,
-                        facing: idx < count / 2 ? 1 : -1,
-                        hp: 1000,
-                        maxHp: 1000,
-                        mp: 30, // Inicia con 30% de energía
-                        maxMp: 100,
-                        alive: true,
-                        onGround: true,
-                        crouching: false,
-                        blocking: false,
-                        state: 'idle', // 'idle' | 'walk' | 'jump' | 'punch' | 'kick' | 'special' | 'super' | 'hurt' | 'ko'
-                        stateTimer: 0,
-                        attackCooldown: 0,
-                        hitBoxActive: false,
-                        hasHitThisSwing: false,
-                        comboCount: 0,
-                        comboTimer: 0,
-                        kos: 0,
-                        damageDealt: 0,
-                        animFrame: 0,
-                        aiTimer: Math.random() * 20,
-                        aiDecision: 'approach'
-                    };
-                });
-            }
-
-            buildHUD() {
-                document.getElementById('hud-room-code').textContent = `SALA: ${this.room.code}`;
-                const grid = document.getElementById('hud-players-grid');
-                grid.innerHTML = '';
-
-                this.fighters.forEach((f, idx) => {
-                    const isMe = f.id === this.localUserId;
-                    const card = document.createElement('div');
-                    card.id = `hud-card-${f.id}`;
-                    card.className = `rounded-lg px-2 py-1 bg-slate-900/90 border ${isMe ? 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.4)]' : 'border-slate-700/80'} flex flex-col gap-0.5 transition-opacity`;
-                    card.innerHTML = `
-                        <div class="flex items-center justify-between text-[10px] font-bold leading-none">
-                            <span class="truncate max-w-[75%] ${isMe ? 'text-yellow-300' : 'text-white'}">
-                                ${f.archetype.icon} ${f.name}
-                            </span>
-                            <span class="text-[9px] text-slate-400">KO:${f.kos}</span>
-                        </div>
-                        <!-- Barra HP -->
-                        <div class="w-full h-2 bg-slate-950 rounded-sm overflow-hidden border border-slate-800">
-                            <div id="hud-hp-${f.id}" class="h-full transition-all duration-100" style="width: 100%; background: linear-gradient(90deg, #ef4444, #facc15, #22c55e);"></div>
-                        </div>
-                        <!-- Barra MP / Super -->
-                        <div class="w-full h-1.5 bg-slate-950 rounded-sm overflow-hidden">
-                            <div id="hud-mp-${f.id}" class="h-full transition-all duration-100" style="width: 30%; background-color: ${f.archetype.primary};"></div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-            }
-
-            updateHUD() {
-                let aliveCount = 0;
-                this.fighters.forEach(f => {
-                    if (f.alive) aliveCount++;
-                    const hpBar = document.getElementById(`hud-hp-${f.id}`);
-                    const mpBar = document.getElementById(`hud-mp-${f.id}`);
-                    const card = document.getElementById(`hud-card-${f.id}`);
-                    if (hpBar) hpBar.style.width = `${Math.max(0, (f.hp / f.maxHp) * 100)}%`;
-                    if (mpBar) {
-                        mpBar.style.width = `${Math.min(100, f.mp)}%`;
-                        if (f.mp >= 100) mpBar.classList.add('super-ready');
-                        else mpBar.classList.remove('super-ready');
-                    }
-                    if (card) {
-                        card.style.opacity = f.alive ? '1' : '0.4';
-                        const koSpan = card.querySelector('span:last-child');
-                        if (koSpan) koSpan.textContent = `KO:${f.kos}`;
-                    }
-                });
-                document.getElementById('hud-alive-count').textContent = `VIVOS: ${aliveCount}/${this.fighters.length}`;
-                document.getElementById('hud-timer').textContent = String(Math.ceil(this.timer)).padStart(2, '0');
-            }
-
-            bindInputs() {
-                this._onKeyDown = (e) => {
-                    this.keys[e.code] = true;
-                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-                        e.preventDefault();
-                    }
-                };
-                this._onKeyUp = (e) => {
-                    this.keys[e.code] = false;
-                };
-                window.addEventListener('keydown', this._onKeyDown);
-                window.addEventListener('keyup', this._onKeyUp);
-
-                // Controles táctiles
-                document.querySelectorAll('.touch-btn').forEach(btn => {
-                    const code = btn.getAttribute('data-key');
-                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.keys[code] = true; });
-                    btn.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[code] = false; });
-                });
-            }
-
-            destroy() {
-                this.running = false;
-                window.removeEventListener('keydown', this._onKeyDown);
-                window.removeEventListener('keyup', this._onKeyUp);
-            }
-
-            resize() {
-                const rect = this.canvas.parentElement.getBoundingClientRect();
-                this.canvas.width = rect.width;
-                this.canvas.height = rect.height;
-            }
-
-            showBanner(text, duration = 1200) {
-                const banner = document.getElementById('arena-banner');
-                const label = document.getElementById('arena-banner-text');
-                label.textContent = text;
-                banner.classList.remove('hidden');
-                if (duration > 0) {
-                    setTimeout(() => banner.classList.add('hidden'), duration);
-                }
-            }
-
-            start() {
-                this.running = true;
-                this.matchState = 'intro';
-                this.showBanner('ROUND 1', 1100);
-                setTimeout(() => {
-                    if (!this.running) return;
-                    this.showBanner('¡FIGHT!', 850);
-                    sfx.sfxFight();
-                    this.matchState = 'fighting';
-                }, 1150);
-
-                this.lastTime = performance.now();
-                const loop = (now) => {
-                    if (!this.running) return;
-                    const dt = Math.min(0.05, (now - this.lastTime) / 1000);
-                    this.lastTime = now;
-                    this.update(dt);
-                    this.render();
-                    requestAnimationFrame(loop);
-                };
-                requestAnimationFrame(loop);
-            }
-
-            getLocalInputMap() {
-                return {
-                    left: !!(this.keys['KeyA'] || this.keys['ArrowLeft']),
-                    right: !!(this.keys['KeyD'] || this.keys['ArrowRight']),
-                    up: !!(this.keys['KeyW'] || this.keys['ArrowUp']),
-                    down: !!(this.keys['KeyS'] || this.keys['ArrowDown']),
-                    punch: !!(this.keys['KeyJ'] || this.keys['KeyZ']),
-                    kick: !!(this.keys['KeyK'] || this.keys['KeyX']),
-                    block: !!(this.keys['KeyL'] || this.keys['KeyC']),
-                    special: !!(this.keys['KeyU'] || this.keys['KeyV']),
-                    super: !!(this.keys['KeyI'] || this.keys['KeyB'])
-                };
-            }
-
-            computeBotInput(bot) {
-                const input = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
-                // Buscar rival vivo más cercano
-                let nearest = null;
-                let minDist = Infinity;
-                for (const other of this.fighters) {
-                    if (other.id === bot.id || !other.alive) continue;
-                    const d = Math.hypot(other.x - bot.x, other.y - bot.y);
-                    if (d < minDist) {
-                        minDist = d;
-                        nearest = other;
-                    }
-                }
-                if (!nearest) return input;
-
-                const dx = nearest.x - bot.x;
-                const dy = nearest.y - bot.y;
-                const absDx = Math.abs(dx);
-
-                // Detectar proyectiles cercanos para saltar o bloquear
-                const incomingProj = this.projectiles.find(p => p.ownerId !== bot.id && Math.abs(p.x - bot.x) < 160 && Math.abs(p.y - (bot.y - 50)) < 60);
-                if (incomingProj) {
-                    if (Math.random() < 0.55) input.up = true;
-                    else input.block = true;
-                    return input;
-                }
-
-                bot.aiTimer--;
-                if (bot.aiTimer <= 0) {
-                    bot.aiTimer = 14 + Math.floor(Math.random() * 18);
-                    const roll = Math.random();
-                    if (bot.mp >= 100 && absDx < 480 && roll < 0.7) bot.aiDecision = 'super';
-                    else if (absDx < 95) bot.aiDecision = roll < 0.45 ? 'punch' : (roll < 0.8 ? 'kick' : 'block');
-                    else if (absDx < 420 && roll < 0.42) bot.aiDecision = 'special';
-                    else bot.aiDecision = 'approach';
-                }
-
-                if (bot.aiDecision === 'approach') {
-                    if (dx > 55) input.right = true;
-                    else if (dx < -55) input.left = true;
-                    if (dy < -80 && bot.onGround && Math.random() < 0.08) input.up = true;
-                } else if (bot.aiDecision === 'punch') {
-                    bot.facing = dx >= 0 ? 1 : -1;
-                    input.punch = true;
-                    bot.aiDecision = 'approach';
-                } else if (bot.aiDecision === 'kick') {
-                    bot.facing = dx >= 0 ? 1 : -1;
-                    input.kick = true;
-                    bot.aiDecision = 'approach';
-                } else if (bot.aiDecision === 'special') {
-                    bot.facing = dx >= 0 ? 1 : -1;
-                    input.special = true;
-                    bot.aiDecision = 'approach';
-                } else if (bot.aiDecision === 'super') {
-                    bot.facing = dx >= 0 ? 1 : -1;
-                    input.super = true;
-                    bot.aiDecision = 'approach';
-                } else if (bot.aiDecision === 'block') {
-                    input.block = true;
-                }
-
-                return input;
-            }
-
-            update(dt) {
-                // Efecto Hit-Stop (pausa dramática de impacto)
-                if (this.hitStopFrames > 0) {
-                    this.hitStopFrames--;
-                    this.updateCamera();
-                    return;
-                }
-
-                // Si es invitado en multijugador entre pestañas, enviar input al host
-                if (!this.isHost) {
-                    net.sendClientInput(this.getLocalInputMap());
-                }
-
-                // Temporizador de combate
-                if (this.matchState === 'fighting') {
-                    this.timerAccum += dt;
-                    if (this.timerAccum >= 1) {
-                        this.timerAccum -= 1;
-                        this.timer = Math.max(0, this.timer - 1);
-                        if (this.timer === 0) {
-                            this.endMatchByTimeout();
-                        }
-                    }
-                }
-
-                // Actualizar cada luchador
-                for (const f of this.fighters) {
-                    f.animFrame += 0.18;
-                    if (f.comboTimer > 0) {
-                        f.comboTimer--;
-                        if (f.comboTimer === 0) f.comboCount = 0;
-                    }
-                    if (f.attackCooldown > 0) f.attackCooldown--;
-
-                    if (!f.alive) {
-                        f.vy += 0.75;
-                        f.y = Math.min(this.groundY, f.y + f.vy);
-                        continue;
-                    }
-
-                    // Obtener controles según tipo de jugador
-                    let input = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false, special: false, super: false };
-                    if (this.matchState === 'fighting') {
-                        if (f.id === this.localUserId) {
-                            input = this.getLocalInputMap();
-                        } else if (f.isBot) {
-                            input = this.computeBotInput(f);
-                        } else if (this.remoteInputs[f.id]) {
-                            input = this.remoteInputs[f.id];
-                        }
-                    }
-
-                    this.processFighterLogic(f, input);
-                }
-
-                this.updateProjectiles();
-                this.updateParticles();
-                this.updateFloatingTexts();
-                this.updateCamera();
-                this.updateHUD();
-                this.checkWinCondition();
-
-                // Sincronizar estado si es anfitrión
-                if (this.isHost) {
-                    this.syncAccum += dt;
-                    if (this.syncAccum >= 0.05) {
-                        this.syncAccum = 0;
-                        this.broadcastSnapshot();
-                    }
-                }
-            }
-
-            processFighterLogic(f, input) {
-                const arch = f.archetype;
-
-                // Estado de aturdimiento o ataque activo
-                if (f.stateTimer > 0) {
-                    f.stateTimer--;
-                    if (f.stateTimer === 0) {
-                        f.state = f.onGround ? 'idle' : 'jump';
-                        f.hitBoxActive = false;
-                        f.hasHitThisSwing = false;
-                    }
-                }
-
-                const canAct = !['hurt', 'punch', 'kick', 'special', 'super'].includes(f.state);
-
-                // Bloqueo
-                f.blocking = canAct && input.block && f.onGround;
-                f.crouching = canAct && input.down && f.onGround && !f.blocking;
-
-                // Movimiento horizontal
-                if (canAct && !f.blocking && !f.crouching) {
-                    if (input.left) {
-                        f.vx = -arch.speed;
-                        f.facing = -1;
-                        if (f.onGround) f.state = 'walk';
-                    } else if (input.right) {
-                        f.vx = arch.speed;
-                        f.facing = 1;
-                        if (f.onGround) f.state = 'walk';
-                    } else {
-                        f.vx *= 0.72;
-                        if (Math.abs(f.vx) < 0.2) f.vx = 0;
-                        if (f.onGround && f.state === 'walk') f.state = 'idle';
-                    }
-
-                    // Salto
-                    if (input.up && f.onGround) {
-                        f.vy = arch.jumpForce;
-                        f.onGround = false;
-                        f.state = 'jump';
-                        this.spawnDust(f.x, f.y, 6);
-                    }
-                } else {
-                    f.vx *= 0.8;
-                }
-
-                // Acciones ofensivas (Puño, Patada, Poder, Súper)
-                if (canAct && !f.blocking && f.attackCooldown === 0) {
-                    if (input.super && f.mp >= 100) {
-                        this.triggerSuperAttack(f);
-                    } else if (input.special && f.mp >= 20) {
-                        this.triggerSpecialProjectile(f);
-                    } else if (input.punch) {
-                        this.triggerMeleeAttack(f, 'punch');
-                    } else if (input.kick) {
-                        this.triggerMeleeAttack(f, 'kick');
-                    }
-                }
-
-                // Evaluar colisión de golpes cuerpo a cuerpo
-                if (f.hitBoxActive && !f.hasHitThisSwing) {
-                    this.checkMeleeHits(f);
-                }
-
-                // Física y Gravedad
-                const prevY = f.y;
-                f.x += f.vx;
-                f.vy += 0.72; // Gravedad
-                f.y += f.vy;
-
-                // Límites laterales de la arena
-                f.x = Math.max(55, Math.min(this.worldWidth - 55, f.x));
-
-                // Colisión con plataformas elevadas (solo al caer y si no mantiene abajo)
-                let landed = false;
-                if (f.vy >= 0 && !input.down) {
-                    for (const plat of this.platforms) {
-                        if (f.x >= plat.x - 15 && f.x <= plat.x + plat.w + 15) {
-                            if (prevY <= plat.y + 6 && f.y >= plat.y) {
-                                f.y = plat.y;
-                                f.vy = 0;
-                                landed = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // Colisión con el suelo principal
-                if (!landed && f.y >= this.groundY) {
-                    f.y = this.groundY;
-                    f.vy = 0;
-                    landed = true;
-                }
-
-                if (landed && !f.onGround) {
-                    this.spawnDust(f.x, f.y, 5);
-                    if (f.state === 'jump') f.state = 'idle';
-                }
-                f.onGround = landed;
-
-                // Regeneración pasiva ligera de energía
-                f.mp = Math.min(f.maxMp, f.mp + 0.04);
-            }
-
-            triggerMeleeAttack(f, type) {
-                f.state = type;
-                f.stateTimer = type === 'punch' ? 14 : 20;
-                f.attackCooldown = type === 'punch' ? 18 : 26;
-                f.hitBoxActive = true;
-                f.hasHitThisSwing = false;
-                f.vx = f.facing * (type === 'punch' ? 2.5 : 4.2);
-                if (type === 'punch') sfx.sfxPunch();
-                else sfx.sfxKick();
-            }
-
-            triggerSpecialProjectile(f) {
-                f.mp -= 20;
-                f.state = 'special';
-                f.stateTimer = 20;
-                f.attackCooldown = 28;
-                sfx.sfxHadouken();
-
-                const arch = f.archetype;
-                this.projectiles.push({
-                    id: Math.random().toString(36).slice(2),
-                    ownerId: f.id,
-                    ownerName: f.name,
-                    x: f.x + f.facing * 45,
-                    y: f.y - 58,
-                    vx: f.facing * arch.projSpeed,
-                    radius: 22,
-                    damage: 95,
-                    isSuper: false,
-                    color: arch.projColor,
-                    secondary: arch.secondary,
-                    life: 130
-                });
-                this.spawnBurst(f.x + f.facing * 45, f.y - 58, arch.projColor, 12);
-            }
-
-            triggerSuperAttack(f) {
-                f.mp = 0;
-                f.state = 'super';
-                f.stateTimer = 28;
-                f.attackCooldown = 40;
-                this.hitStopFrames = 6;
-                this.camera.shake = 14;
-                sfx.sfxSuper();
-
-                const arch = f.archetype;
-                this.addFloatingText(f.x, f.y - 125, `¡${arch.superName.toUpperCase()}!`, '#facc15', 20);
-
-                // Proyectil gigante Súper
-                this.projectiles.push({
-                    id: Math.random().toString(36).slice(2),
-                    ownerId: f.id,
-                    ownerName: f.name,
-                    x: f.x + f.facing * 60,
-                    y: f.y - 60,
-                    vx: f.facing * (arch.projSpeed * 1.25),
-                    radius: 44,
-                    damage: 230,
+        // Ataques
+        if (p.cooldown === 0 && p.hurtTimer === 0 && !p.blocking) {
+            if (inp.super && p.mp >= 100) {
+                p.mp = 0;
+                p.cooldown = 38;
+                p.attackTimer = 20;
+                p.attackType = 'super';
+                sfx.play('super');
+                broadcastToClients({ type: 'sfx', sound: 'super' });
+                state.shake = 14;
+                state.projectiles.push({
+                    ownerId: p.id,
+                    x: p.x + p.facing * 45,
+                    y: p.y - 45,
+                    vx: p.facing * (p.projSpeed * 1.35),
+                    radius: 34,
+                    damage: Math.round(28 * p.dmg),
+                    color: p.color,
                     isSuper: true,
-                    color: arch.projColor,
-                    secondary: '#ffffff',
-                    life: 150
+                    life: 110
                 });
-                this.spawnBurst(f.x + f.facing * 50, f.y - 60, '#facc15', 25);
+            } else if (inp.power && p.mp >= 20) {
+                p.mp -= 20;
+                p.cooldown = 28;
+                p.attackTimer = 14;
+                p.attackType = 'power';
+                sfx.play('power');
+                broadcastToClients({ type: 'sfx', sound: 'power' });
+                state.projectiles.push({
+                    ownerId: p.id,
+                    x: p.x + p.facing * 40,
+                    y: p.y - 42,
+                    vx: p.facing * p.projSpeed,
+                    radius: 16,
+                    damage: Math.round(13 * p.dmg),
+                    color: p.color,
+                    isSuper: false,
+                    life: 95
+                });
+            } else if (inp.punch) {
+                p.cooldown = 18;
+                p.attackTimer = 10;
+                p.attackType = 'punch';
+                sfx.play('punch');
+                broadcastToClients({ type: 'sfx', sound: 'punch' });
+
+                // Hitbox cuerpo a cuerpo
+                const hitX = p.x + p.facing * 52;
+                for (const target of state.players) {
+                    if (target.id !== p.id && target.alive) {
+                        if (Math.abs(target.x - hitX) < 55 && Math.abs(target.y - p.y) < 75) {
+                            applyDamage(p, target, Math.round(9 * p.dmg), p.facing * 8);
+                        }
+                    }
+                }
             }
+        }
+    }
 
-            checkMeleeHits(attacker) {
-                const reach = attacker.state === 'punch' ? 78 : 96;
-                const dmg = attacker.state === 'punch' ? 55 : 85;
-                const hitX = attacker.x + attacker.facing * (reach * 0.65);
-                const hitY = attacker.y - 55;
+    // 2. Actualizar Proyectiles y Choque entre Poderes
+    for (let i = state.projectiles.length - 1; i >= 0; i--) {
+        const proj = state.projectiles[i];
+        proj.x += proj.vx;
+        proj.life--;
 
-                for (const target of this.fighters) {
-                    if (target.id === attacker.id || !target.alive) continue;
-                    const dx = Math.abs(target.x - hitX);
-                    const dy = Math.abs((target.y - 54) - hitY);
-                    if (dx < reach * 0.65 && dy < 58) {
-                        attacker.hasHitThisSwing = true;
-                        this.applyDamage(attacker, target, dmg, attacker.facing * (attacker.state === 'kick' ? 11 : 6.5));
+        if (proj.life <= 0 || proj.x < 0 || proj.x > ARENA_WIDTH) {
+            state.projectiles.splice(i, 1);
+            continue;
+        }
+
+        // Choque entre proyectiles rivales
+        let destroyed = false;
+        for (let j = i - 1; j >= 0; j--) {
+            const other = state.projectiles[j];
+            if (proj.ownerId !== other.ownerId) {
+                const dist = Math.hypot(proj.x - other.x, proj.y - other.y);
+                if (dist < proj.radius + other.radius) {
+                    spawnParticles((proj.x + other.x) / 2, proj.y, '#ffffff', 16);
+                    if (proj.isSuper && !other.isSuper) {
+                        state.projectiles.splice(j, 1);
+                        i--;
+                    } else if (!proj.isSuper && other.isSuper) {
+                        state.projectiles.splice(i, 1);
+                        destroyed = true;
+                        break;
+                    } else {
+                        state.projectiles.splice(i, 1);
+                        state.projectiles.splice(j, 1);
+                        i--;
+                        destroyed = true;
                         break;
                     }
                 }
             }
+        }
+        if (destroyed) continue;
 
-            applyDamage(attacker, target, rawDamage, knockbackX) {
-                // Verificar bloqueo
-                if (target.blocking) {
-                    const chipDamage = Math.round(rawDamage * 0.18);
-                    target.hp = Math.max(1, target.hp - chipDamage);
-                    target.vx = knockbackX * 0.4;
-                    sfx.sfxBlock();
-                    this.spawnBurst(target.x, target.y - 55, '#38bdf8', 8);
-                    this.addFloatingText(target.x, target.y - 110, '¡BLOQUEO!', '#38bdf8', 14);
-                    return;
-                }
-
-                target.hp = Math.max(0, target.hp - rawDamage);
-                target.vx = knockbackX;
-                target.vy = -4.5;
-                target.state = 'hurt';
-                target.stateTimer = 14;
-                target.mp = Math.min(target.maxMp, target.mp + 12);
-
-                attacker.damageDealt += rawDamage;
-                attacker.mp = Math.min(attacker.maxMp, attacker.mp + 16);
-                attacker.comboCount++;
-                attacker.comboTimer = 95;
-
-                this.hitStopFrames = 3;
-                this.camera.shake = Math.min(16, 5 + rawDamage * 0.05);
-                this.spawnBurst(target.x, target.y - 55, attacker.archetype.primary, 14);
-
-                const comboText = attacker.comboCount > 1 ? ` (COMBO x${attacker.comboCount})` : '';
-                this.addFloatingText(target.x, target.y - 115, `-${rawDamage}${comboText}`, '#facc15', attacker.comboCount > 1 ? 17 : 14);
-
-                if (target.hp <= 0 && target.alive) {
-                    target.alive = false;
-                    target.state = 'ko';
-                    target.vy = -10;
-                    target.vx = knockbackX * 1.4;
-                    attacker.kos++;
-                    this.camera.shake = 18;
-                    this.hitStopFrames = 8;
-                    sfx.sfxKO();
-                    this.spawnBurst(target.x, target.y - 50, '#ef4444', 32);
-                    this.addFloatingText(target.x, target.y - 130, '¡K.O.!', '#ef4444', 24);
-                }
-            }
-
-            updateProjectiles() {
-                for (let i = this.projectiles.length - 1; i >= 0; i--) {
-                    const p = this.projectiles[i];
-                    p.x += p.vx;
-                    p.life--;
-
-                    // Estela de partículas
-                    if (Math.random() < 0.7) {
-                        this.particles.push({
-                            x: p.x - Math.sign(p.vx) * 10,
-                            y: p.y + (Math.random() - 0.5) * p.radius,
-                            vx: -p.vx * 0.2,
-                            vy: (Math.random() - 0.5) * 1.5,
-                            radius: p.isSuper ? 8 : 4,
-                            color: p.color,
-                            alpha: 0.9,
-                            decay: 0.06
-                        });
-                    }
-
-                    // Colisión entre proyectiles (Choque de poderes)
-                    let destroyed = false;
-                    for (let j = i - 1; j >= 0; j--) {
-                        const p2 = this.projectiles[j];
-                        if (p.ownerId === p2.ownerId) continue;
-                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if (dist < p.radius + p2.radius) {
-                            sfx.sfxClash();
-                            this.camera.shake = 10;
-                            this.spawnBurst((p.x + p2.x) / 2, (p.y + p2.y) / 2, '#ffffff', 22);
-                            this.addFloatingText((p.x + p2.x) / 2, p.y - 30, '¡CHOQUE DE PODER!', '#38bdf8', 15);
-                            if (!p.isSuper && p2.isSuper) {
-                                destroyed = true;
-                            } else if (p.isSuper && !p2.isSuper) {
-                                this.projectiles.splice(j, 1);
-                                i--;
-                            } else {
-                                this.projectiles.splice(j, 1);
-                                i--;
-                                destroyed = true;
-                            }
-                            break;
-                        }
-                    }
-
-                    if (destroyed) {
-                        this.projectiles.splice(i, 1);
-                        continue;
-                    }
-
-                    // Colisión con luchadores enemigos
-                    const owner = this.fighters.find(f => f.id === p.ownerId);
-                    for (const target of this.fighters) {
-                        if (!target.alive || target.id === p.ownerId) continue;
-                        const dx = Math.abs(target.x - p.x);
-                        const dy = Math.abs((target.y - 54) - p.y);
-                        if (dx < p.radius + 22 && dy < p.radius + 45) {
-                            if (owner) {
-                                this.applyDamage(owner, target, p.damage, Math.sign(p.vx) * (p.isSuper ? 15 : 8));
-                            }
-                            if (!p.isSuper) {
-                                destroyed = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (destroyed || p.life <= 0 || p.x < -50 || p.x > this.worldWidth + 50) {
-                        this.projectiles.splice(i, 1);
-                    }
-                }
-            }
-
-            spawnBurst(x, y, color, count = 12) {
-                for (let i = 0; i < count; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const spd = 2 + Math.random() * 7;
-                    this.particles.push({
-                        x, y,
-                        vx: Math.cos(angle) * spd,
-                        vy: Math.sin(angle) * spd,
-                        radius: 3 + Math.random() * 5,
-                        color,
-                        alpha: 1,
-                        decay: 0.03 + Math.random() * 0.03
-                    });
-                }
-            }
-
-            spawnDust(x, y, count = 5) {
-                for (let i = 0; i < count; i++) {
-                    this.particles.push({
-                        x: x + (Math.random() - 0.5) * 24,
-                        y: y - 4,
-                        vx: (Math.random() - 0.5) * 3,
-                        vy: -Math.random() * 2,
-                        radius: 4 + Math.random() * 4,
-                        color: '#cbd5e1',
-                        alpha: 0.6,
-                        decay: 0.04
-                    });
-                }
-            }
-
-            updateParticles() {
-                for (let i = this.particles.length - 1; i >= 0; i--) {
-                    const pt = this.particles[i];
-                    pt.x += pt.vx;
-                    pt.y += pt.vy;
-                    pt.alpha -= pt.decay;
-                    if (pt.alpha <= 0) this.particles.splice(i, 1);
-                }
-            }
-
-            addFloatingText(x, y, text, color = '#fff', size = 15) {
-                this.floatingTexts.push({ x, y, text, color, size, vy: -1.4, life: 55 });
-            }
-
-            updateFloatingTexts() {
-                for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
-                    const ft = this.floatingTexts[i];
-                    ft.y += ft.vy;
-                    ft.life--;
-                    if (ft.life <= 0) this.floatingTexts.splice(i, 1);
-                }
-            }
-
-            updateCamera() {
-                const alive = this.fighters.filter(f => f.alive);
-                const targets = alive.length > 0 ? alive : this.fighters;
-                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-                for (const f of targets) {
-                    minX = Math.min(minX, f.x - 140);
-                    maxX = Math.max(maxX, f.x + 140);
-                    minY = Math.min(minY, f.y - 180);
-                    maxY = Math.max(maxY, f.y + 70);
-                }
-                const centerX = (minX + maxX) / 2;
-                const centerY = (minY + maxY) / 2;
-                const spanX = Math.max(680, maxX - minX);
-                const targetZoom = Math.max(0.55, Math.min(1.08, this.canvas.width / spanX));
-
-                this.camera.x += (centerX - this.camera.x) * 0.1;
-                this.camera.y += (centerY - this.camera.y) * 0.1;
-                this.camera.zoom += (targetZoom - this.camera.zoom) * 0.08;
-                if (this.camera.shake > 0) this.camera.shake *= 0.82;
-            }
-
-            checkWinCondition() {
-                if (this.matchState !== 'fighting') return;
-                const alive = this.fighters.filter(f => f.alive);
-                if (alive.length <= 1) {
-                    this.matchState = 'ended';
-                    const winner = alive[0] || this.fighters[0];
-                    this.showBanner(`¡${winner.name} GANA!`, 1800);
-                    setTimeout(() => this.openResultsModal(winner), 1900);
-                }
-            }
-
-            endMatchByTimeout() {
-                if (this.matchState !== 'fighting') return;
-                this.matchState = 'ended';
-                const sorted = [...this.fighters].sort((a, b) => b.hp - a.hp);
-                const winner = sorted[0];
-                this.showBanner('¡TIEMPO AGOTADO!', 1600);
-                setTimeout(() => this.openResultsModal(winner), 1700);
-            }
-
-            openResultsModal(winner) {
-                this.running = false;
-                document.getElementById('winner-title').textContent = `🏆 ¡GANADOR: ${winner.name}!`;
-                const sorted = [...this.fighters].sort((a, b) => {
-                    if (a.alive !== b.alive) return a.alive ? -1 : 1;
-                    if (b.kos !== a.kos) return b.kos - a.kos;
-                    return b.damageDealt - a.damageDealt;
-                });
-
-                const board = document.getElementById('results-leaderboard');
-                board.innerHTML = '';
-                sorted.forEach((f, idx) => {
-                    const row = document.createElement('div');
-                    row.className = `grid grid-cols-12 px-3 py-2.5 text-xs sm:text-sm items-center ${idx === 0 ? 'bg-yellow-500/10 font-bold text-yellow-300' : 'text-slate-200'}`;
-                    row.innerHTML = `
-                        <div class="col-span-1 font-arcade text-xs">${idx + 1}</div>
-                        <div class="col-span-5 flex items-center gap-2 truncate">
-                            <span>${f.archetype.icon}</span>
-                            <span class="truncate">${f.name}</span>
-                        </div>
-                        <div class="col-span-3 text-center font-bold text-red-400">${f.kos} K.O.</div>
-                        <div class="col-span-3 text-right font-bold text-sky-400">${f.damageDealt} DMG</div>
-                    `;
-                    board.appendChild(row);
-                });
-                document.getElementById('screen-results').classList.remove('hidden');
-            }
-
-            broadcastSnapshot() {
-                net.broadcastCombatSnapshot({
-                    timer: this.timer,
-                    fighters: this.fighters.map(f => ({
-                        id: f.id, x: f.x, y: f.y, vx: f.vx, vy: f.vy,
-                        facing: f.facing, hp: f.hp, mp: f.mp, alive: f.alive,
-                        state: f.state, blocking: f.blocking, crouching: f.crouching,
-                        kos: f.kos, damageDealt: f.damageDealt
-                    })),
-                    projectiles: this.projectiles
-                });
-            }
-
-            applyRemoteSnapshot(payload) {
-                if (this.isHost || !payload) return;
-                this.timer = payload.timer;
-                if (payload.fighters) {
-                    payload.fighters.forEach(rf => {
-                        const localF = this.fighters.find(f => f.id === rf.id);
-                        if (localF) Object.assign(localF, rf);
-                    });
-                }
-                if (payload.projectiles) this.projectiles = payload.projectiles;
-            }
-
-            // =========================================================================
-            // 6. RENDERIZADO VISUAL DE LA ARENA Y PERSONAJES ESTILO STREET FIGHTER
-            // =========================================================================
-            render() {
-                const ctx = this.ctx;
-                const w = this.canvas.width;
-                const h = this.canvas.height;
-                ctx.clearRect(0, 0, w, h);
-
-                ctx.save();
-                // Aplicar cámara dinámica y sacudida
-                const shakeX = (Math.random() - 0.5) * this.camera.shake;
-                const shakeY = (Math.random() - 0.5) * this.camera.shake;
-                ctx.translate(w / 2 + shakeX, h / 2 + shakeY);
-                ctx.scale(this.camera.zoom, this.camera.zoom);
-                ctx.translate(-this.camera.x, -this.camera.y);
-
-                this.drawArenaBackground(ctx);
-                this.drawPlatforms(ctx);
-
-                // Dibujar luchadores ordenados (vivos encima de derrotados)
-                const ordered = [...this.fighters].sort((a, b) => (a.alive === b.alive ? 0 : a.alive ? 1 : -1));
-                for (const f of ordered) {
-                    this.drawFighter(ctx, f);
-                }
-
-                this.drawProjectiles(ctx);
-                this.drawParticles(ctx);
-                this.drawFloatingTexts(ctx);
-
-                ctx.restore();
-            }
-
-            drawArenaBackground(ctx) {
-                const arenaType = this.room.arena || 'suzaku';
-                // Cielo degradado
-                const skyGrad = ctx.createLinearGradient(0, -200, 0, this.groundY);
-                if (arenaType === 'cyber') {
-                    skyGrad.addColorStop(0, '#020617');
-                    skyGrad.addColorStop(0.6, '#1e1b4b');
-                    skyGrad.addColorStop(1, '#311042');
-                } else if (arenaType === 'volcano') {
-                    skyGrad.addColorStop(0, '#180505');
-                    skyGrad.addColorStop(0.6, '#450a0a');
-                    skyGrad.addColorStop(1, '#9a3412');
-                } else {
-                    // Templo Suzaku Nocturno
-                    skyGrad.addColorStop(0, '#090d16');
-                    skyGrad.addColorStop(0.55, '#1e293b');
-                    skyGrad.addColorStop(1, '#4c1d95');
-                }
-                ctx.fillStyle = skyGrad;
-                ctx.fillRect(-400, -300, this.worldWidth + 800, this.groundY + 300);
-
-                // Luna / Sol gigante de fondo
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(this.worldWidth * 0.5, 190, 110, 0, Math.PI * 2);
-                ctx.fillStyle = arenaType === 'volcano' ? 'rgba(249, 115, 22, 0.25)' : 'rgba(250, 204, 21, 0.16)';
-                ctx.fill();
-                ctx.restore();
-
-                // Silueta de templo / edificios parallax
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-                for (let x = 80; x < this.worldWidth; x += 280) {
-                    ctx.fillRect(x, 260, 160, this.groundY - 260);
-                    // Tejado estilo pagoda
-                    ctx.beginPath();
-                    ctx.moveTo(x - 25, 260);
-                    ctx.lineTo(x + 80, 210);
-                    ctx.lineTo(x + 185, 260);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-
-                // Suelo de combate texturizado
-                const floorGrad = ctx.createLinearGradient(0, this.groundY, 0, this.worldHeight + 200);
-                floorGrad.addColorStop(0, '#334155');
-                floorGrad.addColorStop(0.15, '#1e293b');
-                floorGrad.addColorStop(1, '#090b10');
-                ctx.fillStyle = floorGrad;
-                ctx.fillRect(-400, this.groundY, this.worldWidth + 800, 350);
-
-                // Línea de neón en el borde del tatami
-                ctx.fillStyle = arenaType === 'cyber' ? '#22d3ee' : (arenaType === 'volcano' ? '#f97316' : '#facc15');
-                ctx.fillRect(-400, this.groundY, this.worldWidth + 800, 5);
-            }
-
-            drawPlatforms(ctx) {
-                for (const p of this.platforms) {
-                    ctx.fillStyle = '#1e293b';
-                    ctx.fillRect(p.x, p.y, p.w, p.h);
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fillRect(p.x, p.y, p.w, 4);
-                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                    ctx.strokeRect(p.x, p.y, p.w, p.h);
-                }
-            }
-
-            drawFighter(ctx, f) {
-                const arch = f.archetype;
-                ctx.save();
-                ctx.translate(f.x, f.y);
-
-                // Sombra en el suelo
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-                ctx.beginPath();
-                ctx.ellipse(0, 2, 30, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Aura si tiene Súper al 100%
-                if (f.alive && f.mp >= 100) {
-                    const pulse = 1 + Math.sin(f.animFrame * 0.8) * 0.12;
-                    ctx.save();
-                    ctx.scale(pulse, pulse);
-                    ctx.strokeStyle = arch.primary;
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(0, -52, 48, 0, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-
-                // Etiqueta superior con nombre y barra de vida mini
-                if (f.alive) {
-                    const isMe = f.id === this.localUserId;
-                    ctx.font = 'bold 12px Rajdhani, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = isMe ? '#facc15' : '#ffffff';
-                    ctx.fillText(isMe ? `▼ ${f.name}` : f.name, 0, -124);
-
-                    // Mini barra HP sobre cabeza
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.fillRect(-26, -118, 52, 5);
-                    ctx.fillStyle = f.hp > 300 ? '#22c55e' : '#ef4444';
-                    ctx.fillRect(-25, -117, 50 * (f.hp / f.maxHp), 3);
-                }
-
-                // Rotación si está K.O.
-                if (!f.alive) {
-                    ctx.rotate(Math.PI / 2 * f.facing);
-                    ctx.translate(-15, 0);
-                }
-
-                ctx.scale(f.facing, f.crouching ? 0.72 : 1);
-
-                const bob = f.onGround && f.state === 'idle' ? Math.sin(f.animFrame) * 3 : 0;
-                const walkSwing = f.state === 'walk' ? Math.sin(f.animFrame * 1.5) * 14 : 0;
-
-                // Piernas
-                ctx.fillStyle = arch.giColor;
-                ctx.fillRect(-16 - walkSwing * 0.5, -45, 13, 45);
-                ctx.fillRect(4 + walkSwing * 0.5, -45, 13, 45);
-
-                // Patada extendida
-                if (f.state === 'kick') {
-                    ctx.save();
-                    ctx.translate(10, -48);
-                    ctx.rotate(-0.35);
-                    ctx.fillStyle = arch.giColor;
-                    ctx.fillRect(0, -8, 56, 16);
-                    ctx.fillStyle = arch.primary;
-                    ctx.fillRect(44, -9, 16, 18);
-                    ctx.restore();
-                }
-
-                // Torso (Kimono / Armadura)
-                ctx.fillStyle = arch.giColor;
-                ctx.beginPath();
-                ctx.roundRect(-20, -88 + bob, 40, 46, 6);
-                ctx.fill();
-
-                // Cinturón
-                ctx.fillStyle = arch.bandColor;
-                ctx.fillRect(-21, -50 + bob, 42, 7);
-
-                // Cabeza
-                ctx.fillStyle = arch.skin;
-                ctx.beginPath();
-                ctx.arc(0, -101 + bob, 15, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Cinta / Visor frontal
-                ctx.fillStyle = arch.bandColor;
-                ctx.fillRect(-15, -108 + bob, 30, 6);
-                // Cola de la cinta ondeando
-                ctx.fillRect(-24, -107 + bob + Math.sin(f.animFrame) * 2, 10, 5);
-
-                // Brazos y Puños
-                ctx.fillStyle = arch.skin;
-                if (f.state === 'punch') {
-                    // Puñetazo recto con estela
-                    ctx.fillRect(12, -80 + bob, 46, 13);
-                    ctx.fillStyle = arch.primary;
-                    ctx.beginPath();
-                    ctx.arc(60, -73 + bob, 11, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (f.state === 'special' || f.state === 'super') {
-                    // Pose de Hadouken con ambas manos al frente
-                    ctx.fillRect(10, -78 + bob, 34, 14);
-                    ctx.fillStyle = arch.primary;
-                    ctx.beginPath();
-                    ctx.arc(46, -71 + bob, 14, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    // Guardia de combate
-                    ctx.fillRect(8, -80 + bob, 16, 22);
-                    ctx.fillStyle = arch.bandColor;
-                    ctx.fillRect(16, -72 + bob, 10, 10);
-                }
-
-                // Escudo visual si está bloqueando
-                if (f.blocking) {
-                    ctx.strokeStyle = '#38bdf8';
-                    ctx.lineWidth = 4;
-                    ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
-                    ctx.beginPath();
-                    ctx.arc(14, -60, 44, -Math.PI * 0.45, Math.PI * 0.45);
-                    ctx.stroke();
-                    ctx.fill();
-                }
-
-                ctx.restore();
-            }
-
-            drawProjectiles(ctx) {
-                for (const p of this.projectiles) {
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    const pulse = 1 + Math.sin(performance.now() * 0.025) * 0.14;
-                    ctx.scale(pulse, pulse);
-
-                    // Halo exterior brillante
-                    const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, p.radius * 1.4);
-                    grad.addColorStop(0, '#ffffff');
-                    grad.addColorStop(0.45, p.color);
-                    grad.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, p.radius * 1.4, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Núcleo de energía
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, p.radius * 0.48, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.restore();
-                }
-            }
-
-            drawParticles(ctx) {
-                for (const pt of this.particles) {
-                    ctx.save();
-                    ctx.globalAlpha = Math.max(0, pt.alpha);
-                    ctx.fillStyle = pt.color;
-                    ctx.beginPath();
-                    ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            }
-
-            drawFloatingTexts(ctx) {
-                for (const ft of this.floatingTexts) {
-                    ctx.save();
-                    ctx.globalAlpha = Math.min(1, ft.life / 20);
-                    ctx.font = `900 ${ft.size}px "Rajdhani", sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 4;
-                    ctx.strokeText(ft.text, ft.x, ft.y);
-                    ctx.fillStyle = ft.color;
-                    ctx.fillText(ft.text, ft.x, ft.y);
-                    ctx.restore();
+        // Impacto contra jugadores
+        for (const target of state.players) {
+            if (target.alive && target.id !== proj.ownerId) {
+                if (Math.abs(target.x - proj.x) < proj.radius + 24 && Math.abs((target.y - 42) - proj.y) < proj.radius + 36) {
+                    const attacker = state.players.find(pl => pl.id === proj.ownerId);
+                    applyDamage(attacker, target, proj.damage, Math.sign(proj.vx) * (proj.isSuper ? 16 : 9));
+                    spawnParticles(proj.x, proj.y, proj.color, proj.isSuper ? 25 : 14);
+                    state.projectiles.splice(i, 1);
+                    break;
                 }
             }
         }
+    }
 
-        // =========================================================================
-        // 7. CONTROLADORES DE EVENTOS Y NAVEGACIÓN ENTRE PANTALLAS
-        // =========================================================================
-        function getPlayerProfile() {
-            const rawName = document.getElementById('input-player-name').value.trim().toUpperCase();
-            state.playerName = rawName || 'LUCHADOR_' + Math.floor(10 + Math.random() * 89);
-            document.getElementById('input-player-name').value = state.playerName;
-            return {
-                name: state.playerName,
-                archetypeId: state.selectedArchetypeId
-            };
+    // 3. Partículas
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+        const pt = state.particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.25;
+        pt.life--;
+        if (pt.life <= 0) state.particles.splice(i, 1);
+    }
+
+    // 4. Verificar Ganador
+    const survivors = state.players.filter(p => p.alive);
+    if (survivors.length <= 1 && !state.winnerText) {
+        state.winnerText = survivors.length === 1
+            ? `¡${survivors[0].name} GANA LA BATALLA!`
+            : '¡DOBLE K.O. - EMPATE!';
+        sfx.play('ko');
+        broadcastToClients({ type: 'sfx', sound: 'ko' });
+    }
+
+    updateHud();
+}
+
+function applyDamage(attacker, target, amount, knockbackX) {
+    if (target.blocking) {
+        amount = Math.max(1, Math.floor(amount * 0.25));
+        knockbackX *= 0.4;
+        spawnParticles(target.x, target.y - 45, '#00f0ff', 6);
+    } else {
+        target.hurtTimer = 10;
+        state.hitStop = 3;
+        state.shake = Math.max(state.shake, 7);
+        spawnParticles(target.x, target.y - 45, '#ffcc00', 12);
+    }
+
+    target.hp = Math.max(0, target.hp - amount);
+    target.vx = knockbackX;
+    if (attacker) attacker.mp = Math.min(attacker.maxMp, attacker.mp + amount * 0.9);
+
+    if (target.hp <= 0 && target.alive) {
+        target.alive = false;
+        target.vy = -12;
+        if (attacker) attacker.kills++;
+        sfx.play('ko');
+        broadcastToClients({ type: 'sfx', sound: 'ko' });
+        spawnParticles(target.x, target.y - 40, '#ff2a55', 30);
+    }
+}
+
+/**
+ * ============================================================================
+ * 7. RENDERIZADO CANVAS 2D Y CÁMARA DINÁMICA
+ * ============================================================================
+ */
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function drawStage(stageName) {
+    const grad = ctx.createLinearGradient(0, 0, 0, FLOOR_Y + 150);
+    if (stageName === 'cyber') {
+        grad.addColorStop(0, '#070b19');
+        grad.addColorStop(1, '#181038');
+    } else if (stageName === 'volcano') {
+        grad.addColorStop(0, '#1f0808');
+        grad.addColorStop(1, '#5c1409');
+    } else {
+        grad.addColorStop(0, '#121b2e');
+        grad.addColorStop(1, '#3b243b');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, ARENA_WIDTH, FLOOR_Y + 250);
+
+    // Luna / Sol de fondo
+    ctx.beginPath();
+    ctx.arc(ARENA_WIDTH / 2, 230, 110, 0, Math.PI * 2);
+    ctx.fillStyle = stageName === 'cyber' ? 'rgba(0, 240, 255, 0.15)' : 'rgba(255, 190, 60, 0.22)';
+    ctx.fill();
+
+    // Pilares decorativos
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    for (let x = 150; x < ARENA_WIDTH; x += 320) {
+        ctx.fillRect(x, 180, 44, FLOOR_Y - 180);
+    }
+
+    // Suelo de la arena
+    ctx.fillStyle = stageName === 'cyber' ? '#0f172a' : (stageName === 'volcano' ? '#290d09' : '#1e2433');
+    ctx.fillRect(0, FLOOR_Y, ARENA_WIDTH, 300);
+
+    // Línea brillante del piso
+    ctx.fillStyle = stageName === 'cyber' ? '#00f0ff' : (stageName === 'volcano' ? '#ff5500' : '#ffcc00');
+    ctx.fillRect(0, FLOOR_Y, ARENA_WIDTH, 5);
+}
+
+function drawFighter(p) {
+    if (!p.alive) return;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+
+    // Sombra en el piso
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 24, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Etiqueta de nombre sobre el personaje
+    ctx.fillStyle = p.id === state.myId ? '#ffcc00' : '#ffffff';
+    ctx.font = 'bold 14px Rajdhani';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.name, 0, -96);
+
+    ctx.scale(p.facing, 1);
+
+    // Parpadeo al recibir daño
+    if (p.hurtTimer > 0 && Math.floor(p.hurtTimer / 2) % 2 === 0) {
+        ctx.filter = 'brightness(2.5)';
+    }
+
+    const walkBob = Math.sin(p.animFrame) * 3;
+
+    // Piernas
+    ctx.fillStyle = p.gi;
+    ctx.fillRect(-13, -34 + walkBob, 10, 34 - walkBob);
+    ctx.fillRect(4, -34 - walkBob, 10, 34 + walkBob);
+
+    // Torso (Gi de combate)
+    ctx.fillStyle = p.gi;
+    ctx.fillRect(-16, -68, 32, 36);
+
+    // Cinturón
+    ctx.fillStyle = '#111';
+    ctx.fillRect(-16, -38, 32, 6);
+
+    // Cabeza
+    ctx.fillStyle = '#f1c27d';
+    ctx.fillRect(-11, -88, 22, 20);
+
+    // Cinta ninja / karate
+    ctx.fillStyle = p.headband;
+    ctx.fillRect(-12, -84, 24, 5);
+    ctx.fillRect(-20, -82, 9, 4);
+
+    // Brazos y pose de ataque
+    ctx.fillStyle = '#f1c27d';
+    if (p.attackTimer > 0) {
+        // Puño extendido con aura
+        ctx.fillRect(10, -62, 34, 10);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(46, -57, p.attackType === 'super' ? 22 : 13, 0, Math.PI * 2);
+        ctx.fill();
+    } else if (p.blocking) {
+        // Guardia alta + escudo energético
+        ctx.fillRect(8, -74, 10, 26);
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(16, -50, 32, -Math.PI / 2, Math.PI / 2);
+        ctx.stroke();
+    } else {
+        ctx.fillRect(8, -62, 16, 9);
+    }
+
+    ctx.restore();
+}
+
+function renderLoop() {
+    if (state.inGame) {
+        updateSimulation();
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Cámara dinámica que encuadra a todos los luchadores vivos
+        const alivePlayers = state.players.filter(p => p.alive);
+        let minX = ARENA_WIDTH, maxX = 0;
+        if (alivePlayers.length > 0) {
+            alivePlayers.forEach(p => {
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+            });
+        } else {
+            minX = 200; maxX = ARENA_WIDTH - 200;
         }
 
-        function launchArena(room) {
-            if (state.gameInstance) {
-                state.gameInstance.destroy();
-            }
-            switchScreen('game');
-            const canvas = document.getElementById('game-canvas');
-            state.gameInstance = new StreetBrawlEngine(canvas, room, net.userId);
-            state.gameInstance.start();
-        }
+        const span = Math.max(650, (maxX - minX) + 380);
+        const zoom = Math.min(1.15, Math.max(0.55, canvas.width / span));
+        const centerX = (minX + maxX) / 2;
 
-        // Suscripciones de red
-        net.onRoomUpdated = (room) => {
-            renderLobby(room);
-        };
-        net.onCombatStateReceived = (payload) => {
-            if (state.gameInstance) state.gameInstance.applyRemoteSnapshot(payload);
-        };
-        net.onClientInputReceived = (senderId, input) => {
-            if (state.gameInstance) state.gameInstance.remoteInputs[senderId] = input;
-        };
+        ctx.save();
+        const shakeX = (Math.random() - 0.5) * state.shake;
+        const shakeY = (Math.random() - 0.5) * state.shake;
 
-        // Botones del Menú Principal
-        document.getElementById('btn-toggle-sound').onclick = () => {
-            const on = sfx.toggle();
-            document.getElementById('sound-icon').textContent = on ? '🔊' : '🔇';
-            document.getElementById('sound-text').textContent = on ? 'SONIDO: ON' : 'SONIDO: OFF';
-            document.getElementById('btn-hud-sound').textContent = on ? '🔊' : '🔇';
-        };
+        ctx.translate(canvas.width / 2 + shakeX, canvas.height * 0.82 + shakeY);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-centerX, -FLOOR_Y);
 
-        document.getElementById('btn-hud-sound').onclick = () => {
-            document.getElementById('btn-toggle-sound').click();
-        };
+        drawStage(state.stage);
 
-        document.getElementById('btn-create-room').onclick = async () => {
-            sfx.init();
-            sfx.sfxSelect();
-            const profile = getPlayerProfile();
-            const room = await net.createRoom(profile, 'suzaku');
-            switchScreen('lobby');
-            renderLobby(room);
-            showToast(`Sala ${room.code} creada. ¡Comparte el código!`, 'success');
-        };
+        // Dibujar Luchadores
+        state.players.forEach(drawFighter);
 
-        document.getElementById('btn-join-room').onclick = async () => {
-            sfx.init();
-            sfx.sfxSelect();
-            const code = document.getElementById('input-room-code').value;
-            if (!code.trim()) {
-                showToast('Ingresa un código de sala de 5 caracteres.', 'warn');
-                return;
-            }
-            try {
-                const profile = getPlayerProfile();
-                const room = await net.joinRoom(code, profile);
-                switchScreen('lobby');
-                renderLobby(room);
-                showToast(`Te uniste a la sala ${room.code}`, 'success');
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        };
+        // Dibujar Proyectiles
+        state.projectiles.forEach(proj => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
+            ctx.fillStyle = proj.color;
+            ctx.shadowColor = proj.color;
+            ctx.shadowBlur = 20;
+            ctx.fill();
 
-        document.getElementById('btn-quick-match').onclick = async () => {
-            sfx.init();
-            sfx.sfxSelect();
-            const profile = getPlayerProfile();
-            const room = await net.createRoom(profile, 'suzaku');
-            while (room.slots.length < 8) {
-                addBotToRoom();
-            }
-            room.status = 'playing';
-            await net.saveRoomState(room);
-            launchArena(room);
-        };
-
-        // Botones del Lobby
-        document.getElementById('btn-copy-code').onclick = () => {
-            const code = document.getElementById('lobby-room-code').textContent;
-            const temp = document.createElement('textarea');
-            temp.value = code;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            temp.remove();
-            sfx.sfxSelect();
-            showToast(`Código "${code}" copiado al portapapeles`, 'success');
-        };
-
-        document.getElementById('select-arena').onchange = (e) => {
-            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
-            state.currentRoom.arena = e.target.value;
-            net.saveRoomState(state.currentRoom);
-        };
-
-        document.getElementById('btn-add-bot').onclick = () => addBotToRoom();
-
-        document.getElementById('btn-fill-bots').onclick = () => {
-            if (!state.currentRoom) return;
-            while (state.currentRoom.slots.length < 8) {
-                addBotToRoom();
-            }
-        };
-
-        document.getElementById('btn-clear-bots').onclick = () => {
-            if (!state.currentRoom) return;
-            state.currentRoom.slots = state.currentRoom.slots.filter(s => !s.isBot);
-            sfx.sfxSelect();
-            net.saveRoomState(state.currentRoom);
-        };
-
-        document.getElementById('btn-start-match').onclick = async () => {
-            if (!state.currentRoom || state.currentRoom.slots.length < 2) return;
-            state.currentRoom.status = 'playing';
-            await net.saveRoomState(state.currentRoom);
-            launchArena(state.currentRoom);
-        };
-
-        document.getElementById('btn-leave-room').onclick = () => {
-            sfx.sfxSelect();
-            net.leaveRoom();
-            state.currentRoom = null;
-            switchScreen('menu');
-        };
-
-        // Botones de Arena y Resultados
-        document.getElementById('btn-hud-exit').onclick = () => {
-            if (state.gameInstance) state.gameInstance.destroy();
-            if (state.currentRoom) {
-                state.currentRoom.status = 'lobby';
-                net.saveRoomState(state.currentRoom);
-                switchScreen('lobby');
-                renderLobby(state.currentRoom);
-            } else {
-                switchScreen('menu');
-            }
-        };
-
-        document.getElementById('btn-rematch').onclick = () => {
-            sfx.sfxSelect();
-            if (state.currentRoom) {
-                launchArena(state.currentRoom);
-            }
-        };
-
-        document.getElementById('btn-back-lobby').onclick = () => {
-            sfx.sfxSelect();
-            if (state.currentRoom) {
-                state.currentRoom.status = 'lobby';
-                net.saveRoomState(state.currentRoom);
-                switchScreen('lobby');
-                renderLobby(state.currentRoom);
-            } else {
-                switchScreen('menu');
-            }
-        };
-
-        window.addEventListener('resize', () => {
-            if (state.gameInstance) state.gameInstance.resize();
+            ctx.beginPath();
+            ctx.arc(proj.x, proj.y, proj.radius * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.restore();
         });
 
-        // Inicialización al cargar la página
-        window.onload = async () => {
-            renderFighterGrid();
-            updateFighterDetails();
-            await net.init();
-        };
-    </script>
+        // Dibujar Partículas
+        state.particles.forEach(pt => {
+            ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+            ctx.fillStyle = pt.color;
+            ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+        });
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+
+        // Cartel de Victoria
+        if (state.winnerText) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            ctx.fillRect(0, canvas.height / 2 - 55, canvas.width, 110);
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = 'bold 26px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(state.winnerText, canvas.width / 2, canvas.height / 2 + 10);
+        }
+    }
+    requestAnimationFrame(renderLoop);
+}
+
+// Sincronización de red a ~30 FPS
+setInterval(() => {
+    if (!state.inGame) return;
+    if (state.isHost) {
+        broadcastToClients({
+            type: 'game_state',
+            players: state.players,
+            projectiles: state.projectiles,
+            particles: state.particles,
+            winnerText: state.winnerText
+        });
+    } else if (state.hostConn && state.hostConn.open) {
+        state.hostConn.send({
+            type: 'input',
+            input: localInput
+        });
+    }
+}, 33);
+
+/**
+ * ============================================================================
+ * 8. CONTROLES DE TECLADO, TÁCTILES Y EVENTOS UI
+ * ============================================================================
+ */
+function handleKey(code, isDown) {
+    if (code === 'KeyA' || code === 'ArrowLeft') localInput.left = isDown;
+    if (code === 'KeyD' || code === 'ArrowRight') localInput.right = isDown;
+    if (code === 'KeyW' || code === 'ArrowUp') localInput.up = isDown;
+    if (code === 'KeyS' || code === 'ArrowDown') localInput.down = isDown;
+    if (code === 'KeyJ' || code === 'KeyZ') localInput.punch = isDown;
+    if (code === 'KeyK' || code === 'KeyX') localInput.power = isDown;
+    if (code === 'KeyL' || code === 'KeyC') localInput.super = isDown;
+}
+
+window.addEventListener('keydown', e => handleKey(e.code, true));
+window.addEventListener('keyup', e => handleKey(e.code, false));
+
+document.querySelectorAll('.t-btn').forEach(btn => {
+    const key = btn.dataset.key;
+    btn.addEventListener('touchstart', e => { e.preventDefault(); localInput[key] = true; });
+    btn.addEventListener('touchend', e => { e.preventDefault(); localInput[key] = false; });
+});
+
+document.getElementById('btn-create-room').onclick = createRoomAsHost;
+document.getElementById('btn-join-room').onclick = joinRoomAsClient;
+document.getElementById('btn-leave-room').onclick = leaveRoom;
+document.getElementById('btn-add-bot').onclick = addBotSlot;
+document.getElementById('btn-start-match').onclick = startMatch;
+
+document.getElementById('btn-copy-code').onclick = () => {
+    navigator.clipboard.writeText(state.roomCode);
+    showToast('Código ' + state.roomCode + ' copiado al portapapeles.');
+};
+
+document.getElementById('stage-select').onchange = (e) => {
+    state.stage = e.target.value;
+    broadcastLobby();
+};
+
+document.getElementById('btn-back-lobby').onclick = () => {
+    if (!state.isHost) return;
+    state.inGame = false;
+    switchScreen('lobby-screen');
+    renderLobbySlots();
+    broadcastToClients({ type: 'back_lobby' });
+};
+
+document.getElementById('btn-toggle-sound').onclick = (e) => {
+    sfx.enabled = !sfx.enabled;
+    e.target.textContent = sfx.enabled ? '🔊 SFX' : '🔇 MUTE';
+};
+
+// Inicializar aplicación
+initCharSelector();
+requestAnimationFrame(renderLoop);
+</script>
 </body>
 </html>
