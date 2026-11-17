@@ -237,6 +237,14 @@
             #lobby-slots-grid > div[class*="border-dashed"] { height: 44px !important; }
             #lobby-slots-grid .w-10 { width: 28px !important; height: 28px !important; font-size: 14px !important; }
         }
+
+        /* ----- Menú en PC: distribución de 2 columnas (luchador | salas + controles) ----- */
+        #sound-fab { display: none; }
+        body.menu-desktop #sound-fab { display: block; position: fixed; top: 12px; right: 56px; z-index: 60; }
+        body.in-game #sound-fab { display: none !important; }
+        #menu-right-extra { display: flex; flex-direction: column; gap: 0; }
+        #menu-right-extra .settings-tab { align-self: flex-start; margin-left: 14px; margin-bottom: -1px; position: relative; z-index: 2; }
+        #menu-right-extra #combo-box { border-top-left-radius: 0; }
     </style>
 </head>
 <body class="relative flex items-center justify-center">
@@ -1864,6 +1872,8 @@
 
         // Duración, enfriamiento, frames activos del golpe y frame de disparo del poder
         // 3 puños y 3 patadas: mismo daño por segundo, distinto riesgo (sale / activo / recupera)
+        const FOCUS_FRAMES = 90;        // ≈ 1500 ms de enfoque temporal tras recibir un golpe
+        const FOCUS_BREAK_DIST = 340;    // si el atacante se aleja más de esto, se pierde el enfoque
         const MOVE_DATA = {
             lp: { dur: 13, cd: 14, active: [3, 5], dmg: 35, reach: 70, kb: 4, kby: -3.5, kind: 'light', rank: 1, cat: 'punch' },
             mp: { dur: 22, cd: 23, active: [6, 9], dmg: 60, reach: 82, kb: 6, kby: -4.5, kind: 'medium', rank: 2, cat: 'punch' },
@@ -2930,6 +2940,8 @@
                         hasHitThisSwing: false,
                         comboCount: 0,
                         comboTimer: 0,
+                        focusedTargetId: null,
+                        focusTimer: 0,
                         kos: 0,
                         damageDealt: 0,
                         animFrame: 0,
@@ -3312,6 +3324,25 @@
                 return best.x > f.x ? 1 : -1;
             }
 
+            // SISTEMA DE ENFOQUE DE BLANCO (Target Lock)
+            // 1 vs 1 (un solo rival vivo): siempre mira al rival.
+            // 3+ luchadores: orientación libre; solo se enfoca 1,5 s al atacante tras recibir un golpe cuerpo a cuerpo.
+            getFocusTarget(f) {
+                let only = null, n = 0;
+                for (const o of this.fighters) {
+                    if (o === f || !o.alive || !this.isEnemy(f, o)) continue;
+                    only = o; n++;
+                }
+                if (n === 1) return only;
+                if (f.focusTimer > 0 && f.focusedTargetId != null) {
+                    const t = this.fighters.find(o => o.id === f.focusedTargetId);
+                    if (t && t.alive && this.isEnemy(f, t) && Math.abs(t.x - f.x) <= FOCUS_BREAK_DIST) return t;
+                    // el atacante murió o se alejó demasiado: se suelta el enfoque
+                    f.focusedTargetId = null; f.focusTimer = 0;
+                }
+                return null;
+            }
+
             enemyInReach(f, reach) {
                 return this.fighters.some(o => o.alive && this.isEnemy(f, o) && Math.abs(o.x - (f.x + f.facing * reach * 0.5)) < reach * 0.7 && Math.abs(o.y - f.y) < 80);
             }
@@ -3505,6 +3536,7 @@
             tickFighterTimers(f) {
                 f.animFrame += 0.18;
                 if (f.comboTimer > 0 && --f.comboTimer === 0) f.comboCount = 0;
+                if (f.focusTimer > 0 && --f.focusTimer === 0) f.focusedTargetId = null;
                 if (f.stunTimer > 0) f.stunTimer--;
                 if (f.attackCooldown > 0) f.attackCooldown--;
                 if (f.hitFlash > 0) f.hitFlash--;
@@ -3626,8 +3658,13 @@
                 if (f.isBot) {
                     const face = this.autoFace(f);
                     if (canAct && f.onGround && face) f.facing = face;
-                } else if (cmd.turn && canAct && f.onGround) {
-                    f.facing = -f.facing;
+                } else {
+                    const ft = this.getFocusTarget(f);
+                    if (ft) {
+                        if (canAct && f.onGround && Math.abs(ft.x - f.x) > 6) f.facing = ft.x > f.x ? 1 : -1;
+                    } else if (cmd.turn && canAct && f.onGround) {
+                        f.facing = -f.facing;
+                    }
                 }
 
                 if (canAct && f.onGround && cmd.dodge && f.rollCooldown === 0) {
@@ -4120,6 +4157,13 @@
                     this.addFloatingText(target.x, target.y - 150, 'ARMADURA', '#e0f2fe', 13);
                 }
 
+                // Golpe cuerpo a cuerpo recibido: gira y enfoca (o re-enfoca) al atacante 1,5 s. Los proyectiles NO cambian el objetivo.
+                if (attacker && attacker !== target && !opts.projectile && !opts.chip && !superArmor) {
+                    target.focusedTargetId = attacker.id;
+                    target.focusTimer = FOCUS_FRAMES;
+                    if (Math.abs(attacker.x - target.x) > 6) target.facing = attacker.x > target.x ? 1 : -1;
+                }
+
                 target.mp = Math.min(target.maxMp, target.mp + (hazard ? 4 : 8));
                 if (attacker) {
                     attacker.damageDealt += rawDamage;
@@ -4216,7 +4260,7 @@
                         const dy = Math.abs((target.y - 54) - p.y);
                         if (dx < p.radius + 22 && dy < p.radius + 45) {
                             if (owner) {
-                                this.applyDamage(owner, target, p.damage, Math.sign(p.vx) * (p.isSuper ? 15 : 8), p.isSuper ? -9 : -4.5, { kind: p.isSuper ? 'super' : 'medium', knockdown: p.isSuper });
+                                this.applyDamage(owner, target, p.damage, Math.sign(p.vx) * (p.isSuper ? 15 : 8), p.isSuper ? -9 : -4.5, { kind: p.isSuper ? 'super' : 'medium', knockdown: p.isSuper, projectile: true });
                             }
                             if (p.hitIds) p.hitIds.push(target.id);
                             if (!p.isSuper) { destroyed = true; break; }
@@ -4754,7 +4798,8 @@
                         onGround: f.onGround, blocking: f.blocking, crouching: f.crouching,
                         kos: f.kos, damageDealt: f.damageDealt, team: f.team,
                         invuln: f.invuln, heldBy: f.heldBy, rollDir: f.rollDir,
-                        blockStun: f.blockStun, guardShow: f.guardShow, airDir: f.airDir
+                        blockStun: f.blockStun, guardShow: f.guardShow, airDir: f.airDir,
+                        focusedTargetId: f.focusedTargetId, focusTimer: f.focusTimer
                     })),
                     projectiles: this.projectiles.map(p => ({ id: p.id, ownerId: p.ownerId, team: p.team, kind: p.kind, x: r1(p.x), y: r1(p.y), vx: p.vx, radius: p.radius, isSuper: p.isSuper, color: p.color, life: p.life, age: p.age })),
                     ev: this.evQueue.splice(0)
@@ -4786,6 +4831,7 @@
                         f.hp = rf.hp; f.mp = rf.mp; f.alive = rf.alive; f.kos = rf.kos; f.damageDealt = rf.damageDealt;
                         f.team = rf.team; f.invuln = rf.invuln; f.stunTimer = rf.stunTimer; f.inJuggle = rf.inJuggle; f.heldBy = rf.heldBy;
                         f.blockStun = rf.blockStun || 0; f.airDir = rf.airDir;
+                        f.focusedTargetId = rf.focusedTargetId != null ? rf.focusedTargetId : null; f.focusTimer = rf.focusTimer || 0;
                         if (f.blockStun > 0 || !isLocal) { f.blocking = rf.blocking; f.crouching = rf.crouching; f.guardShow = rf.guardShow; }
 
                         const forced = CLIENT_FORCED.has(rf.state) || !rf.alive;
@@ -6582,6 +6628,52 @@
             ], 'menu');
 
             window.__menuTabs = selMenu;
+        })();
+
+        // =========================================================================
+        // MENÚ EN PC: Ajustes + Sistema de combos pasan a la columna derecha (como el diseño de referencia)
+        // =========================================================================
+        (function setupDesktopMenu() {
+            const menu = document.getElementById('screen-menu');
+            const grid = menu.querySelector(':scope > div');
+            const left = grid.children[0], right = grid.children[1];
+            const headRow = left.children[0];
+            const btnBox = headRow.children[1];
+            const combos = left.children[3];
+            const settingsBtn = document.getElementById('btn-open-settings');
+            const soundBtn = document.getElementById('btn-toggle-sound');
+            combos.id = 'combo-box';
+            const extra = document.createElement('div');
+            extra.id = 'menu-right-extra';
+            settingsBtn.classList.add('settings-tab');
+            const fab = document.createElement('div');
+            fab.id = 'sound-fab';
+            document.body.appendChild(fab);
+            let desktop = null;
+            function isDesktop() {
+                return window.innerWidth >= 1024 && !(window.innerHeight <= 520 && window.innerWidth > window.innerHeight);
+            }
+            function apply() {
+                const d = isDesktop();
+                if (d === desktop) return;
+                desktop = d;
+                document.body.classList.toggle('menu-desktop', d);
+                if (d) {
+                    extra.appendChild(settingsBtn);
+                    extra.appendChild(combos);
+                    right.appendChild(extra);
+                    fab.appendChild(soundBtn);
+                    btnBox.style.display = 'none';
+                } else {
+                    btnBox.style.display = '';
+                    btnBox.insertBefore(settingsBtn, btnBox.firstChild);
+                    btnBox.appendChild(soundBtn);
+                    left.appendChild(combos);
+                    if (extra.parentNode) extra.parentNode.removeChild(extra);
+                }
+            }
+            window.addEventListener('resize', apply);
+            apply();
         })();
 
         window.onload = async () => {
