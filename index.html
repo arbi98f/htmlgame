@@ -130,6 +130,7 @@
         .hud-hp { width: 100%; height: clamp(5px, 1.3vh, 9px); background: #020617; border: 1px solid #1e293b; border-radius: 2px; overflow: hidden; }
         .hud-mp { width: 100%; height: clamp(3px, .8vh, 6px); background: #020617; border-radius: 2px; overflow: hidden; }
         .hud-hp > div, .hud-mp > div { height: 100%; transition: width .1s; }
+        @media (orientation: portrait) { .hud-players { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
         /* ----- Controles táctiles (solo visibles en pantallas táctiles) ----- */
         #touch-controls { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; pointer-events: none;
@@ -154,7 +155,7 @@
         #rotate-overlay { display: none; position: fixed; inset: 0; z-index: 80; background: #07090e; color: #fff; align-items: center; justify-content: center; flex-direction: column; gap: 14px; text-align: center; padding: 24px; }
         #rotate-overlay .rot-icon { font-size: 64px; animation: rotPhone 1.6s ease-in-out infinite; }
         @keyframes rotPhone { 0%, 30% { transform: rotate(0deg); } 70%, 100% { transform: rotate(-90deg); } }
-        @media (orientation: portrait) { #rotate-overlay { display: flex; } }
+        @media (orientation: portrait) { body.touch-on:not(.allow-portrait) #rotate-overlay { display: flex; } }
 
         /* ----- Pestañas para menú y lobby en horizontal bajo (celulares) ----- */
         .tabbar { display: none; }
@@ -174,9 +175,6 @@
             #lobby-slots-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px; }
             #lobby-room-code { font-size: 1.25rem; }
             #screen-menu .arcade-panel { padding: 10px 12px; }
-            #menu-controls-panel > div:last-child { padding: 8px 10px !important; }
-            #menu-controls-panel > div:last-child .grid { gap: 5px !important; }
-            #menu-controls-panel > div:last-child p { font-size: 10.5px !important; }
         }
 
         /* ===== v4: FAB pantalla completa, botones de acción táctiles y pantallas compactas ===== */
@@ -211,6 +209,8 @@
             #fighter-details h3 { font-size: 14px !important; }
             #fighter-details p { margin-top: 1px !important; font-size: 10px !important; }
             #detail-trait { display: none !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(4) { padding: 6px 10px !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(4) p { font-size: 10.5px !important; }
 
             /* --- MENÚ: pestaña SALAS (2 columnas) --- */
             #screen-menu > div > div:nth-child(2) > .arcade-panel { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; padding: 8px 10px !important; }
@@ -251,6 +251,7 @@
         <div class="rot-icon">📱</div>
         <div class="font-arcade text-sm text-yellow-400 leading-relaxed">GIRA TU TELÉFONO</div>
         <p class="text-slate-400 text-sm max-w-xs">El juego está pensado para horizontal: menús, sala y combate.</p>
+        <button id="btn-allow-portrait" class="mt-2 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 text-xs">Continuar en vertical</button>
     </div>
 
     <!-- Notificaciones Flotantes -->
@@ -299,8 +300,8 @@
     </div>
 
     <!-- ==================== PANTALLA 1: MENÚ PRINCIPAL ==================== -->
-    <div id="screen-menu" class="relative z-10 w-full max-w-7xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
-        <header class="relative text-center py-2">
+    <div id="screen-menu" class="relative z-10 w-full max-w-6xl mx-auto p-3 sm:p-6 flex flex-col gap-4 max-h-screen overflow-y-auto">
+        <header class="text-center py-2">
             <div class="inline-block px-3 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 text-xs font-bold tracking-widest uppercase mb-2">
                 TEKKEN JUGGLE COMBOS • 8 ARENAS ÚNICAS • MULTIJUGADOR
             </div>
@@ -310,18 +311,23 @@
             <p class="text-slate-400 text-sm sm:text-base mt-1 font-semibold tracking-wide">
                 ARCADE ROYALE • EDICIÓN LEYENDAS Y PODERES ELEMENTALES
             </p>
-            <button id="btn-toggle-sound" class="absolute top-0 right-0 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
-                <span id="sound-icon">🔊</span> <span id="sound-text">SONIDO: ON</span>
-            </button>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div id="menu-fighter-panel" class="lg:col-span-7 arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
-                <div class="flex items-center border-b border-slate-800 pb-3">
+            <div class="lg:col-span-7 arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-yellow-400 font-bold mb-1">Nombre del Luchador</label>
-                        <input id="input-player-name" type="text" maxlength="14" placeholder="Ej. BRAWLER_X"
+                        <input id="input-player-name" type="text" maxlength="14" placeholder="Ej. BRAWLER_X" 
                             class="bg-slate-900/90 border-2 border-slate-700 focus:border-yellow-400 rounded-xl px-3 py-2 text-white font-bold text-base outline-none w-full sm:w-64 transition">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-open-settings" class="px-3 py-2 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+                            ⚙️ AJUSTES CONTROLES
+                        </button>
+                        <button id="btn-toggle-sound" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                            <span id="sound-icon">🔊</span> <span id="sound-text">SONIDO: ON</span>
+                        </button>
                     </div>
                 </div>
 
@@ -358,10 +364,29 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3">
+                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                        <h3 class="font-arcade text-[10px] sm:text-xs text-yellow-400">SISTEMA COMBOS Y BLOQUEO</h3>
+                        <span class="text-[10px] text-sky-300">6 BOTONES • ESTILO ARCADE</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                        <p>🥊 <b class="text-white">Puños:</b> <b class="text-yellow-300">U · I · O</b> • <b class="text-white">Patadas:</b> <b class="text-yellow-300">J · K · L</b></p>
+                        <p>🛡️ <b class="text-white">Bloqueo:</b> mantén <b class="text-yellow-300">atrás</b> (de pie) o <b class="text-yellow-300">↓ + atrás</b> (agachado)</p>
+                        <p>📏 <b class="text-white">Alturas:</b> salto = ALTO (bloquea de pie) • ↓ + golpe = BAJO (bloquea agachado)</p>
+                        <p>🔄 <b class="text-white">Girarse:</b> <b class="text-yellow-300">atrás, atrás</b> rápido • <b class="text-white">Rueda:</b> <b class="text-yellow-300">↓ + adelante</b></p>
+                        <p>🚀 <b class="text-white">Launcher:</b> <b class="text-yellow-300">↓ ↑ + O</b> y golpea en el aire (máx. 4)</p>
+                        <p>🔮 <b class="text-white">Poder:</b> carga <b class="text-yellow-300">atrás 1 s</b>, luego <b class="text-yellow-300">adelante + puño</b></p>
+                        <p>🌟 <b class="text-white">Súper:</b> <b class="text-yellow-300">O + L</b> (mando LT + RT) con barra llena</p>
+                        <p>🤼 <b class="text-white">Agarre:</b> <b class="text-yellow-300">adelante + I + O</b> (rómpelo igual en 0,23 s)</p>
+                        <p>🦅 <b class="text-white">En el aire:</b> golpe recto, <b class="text-yellow-300">↘</b> diagonal o <b class="text-yellow-300">↓</b> pisotón</p>
+                        <p>🎮 <b class="text-white">Mando:</b> X·Y·LB puños • A·B·RB patadas • LT+RT súper</p>
+                    </div>
+                </div>
             </div>
 
             <div class="lg:col-span-5 flex flex-col gap-4">
-                <div id="menu-rooms-panel" class="arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
+                <div class="arcade-panel rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <h2 class="font-arcade text-sm sm:text-base text-yellow-400">SALAS DE COMBATE</h2>
                         <span id="connection-mode-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
@@ -379,7 +404,7 @@
                     <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 flex flex-col gap-2.5">
                         <label class="text-xs font-bold uppercase tracking-wider text-sky-400">Unirse con Código de Sala</label>
                         <div class="flex gap-2">
-                            <input id="input-room-code" type="text" maxlength="5" placeholder="EJ. ARENA"
+                            <input id="input-room-code" type="text" maxlength="5" placeholder="EJ. ARENA" 
                                 class="uppercase bg-slate-950 border-2 border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2.5 text-center font-arcade text-base text-yellow-300 tracking-widest w-full outline-none">
                             <button id="btn-join-room" class="btn-arcade px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-sm tracking-wider cursor-pointer whitespace-nowrap">
                                 UNIRSE
@@ -396,32 +421,6 @@
                         <button id="btn-quick-match" class="btn-arcade flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs sm:text-sm tracking-wider cursor-pointer">
                             🔥 BATALLA RÁPIDA (VS 7 BOTS)
                         </button>
-                    </div>
-                </div>
-
-                <div id="menu-controls-panel" class="flex flex-col gap-2">
-                    <div>
-                        <button id="btn-open-settings" class="px-3 py-2 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 text-yellow-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
-                            ⚙️ AJUSTES CONTROLES
-                        </button>
-                    </div>
-                    <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3">
-                        <div class="flex items-center justify-between gap-2 mb-1.5">
-                            <h3 class="font-arcade text-[10px] sm:text-xs text-yellow-400">SISTEMA COMBOS Y BLOQUEO</h3>
-                            <span class="text-[10px] text-sky-300">6 BOTONES • ESTILO ARCADE</span>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-                            <p>🥊 <b class="text-white">Puños:</b> <b class="text-yellow-300">U · I · O</b> • <b class="text-white">Patadas:</b> <b class="text-yellow-300">J · K · L</b></p>
-                            <p>🛡️ <b class="text-white">Bloqueo:</b> mantén <b class="text-yellow-300">atrás</b> (de pie) o <b class="text-yellow-300">↓ + atrás</b> (agachado)</p>
-                            <p>📏 <b class="text-white">Alturas:</b> salto = ALTO (bloquea de pie) • ↓ + golpe = BAJO (bloquea agachado)</p>
-                            <p>🔄 <b class="text-white">Girarse:</b> <b class="text-yellow-300">atrás, atrás</b> rápido • <b class="text-white">Rueda:</b> <b class="text-yellow-300">↓ + adelante</b></p>
-                            <p>🚀 <b class="text-white">Launcher:</b> <b class="text-yellow-300">↓ ↑ + O</b> y golpea en el aire (máx. 4)</p>
-                            <p>🔮 <b class="text-white">Poder:</b> carga <b class="text-yellow-300">atrás 1 s</b>, luego <b class="text-yellow-300">adelante + puño</b></p>
-                            <p>🌟 <b class="text-white">Súper:</b> <b class="text-yellow-300">O + L</b> (mando LT + RT) con barra llena</p>
-                            <p>🤼 <b class="text-white">Agarre:</b> <b class="text-yellow-300">adelante + I + O</b> (rómpelo igual en 0,23 s)</p>
-                            <p>🦅 <b class="text-white">En el aire:</b> golpe recto, <b class="text-yellow-300">↘</b> diagonal o <b class="text-yellow-300">↓</b> pisotón</p>
-                            <p>🎮 <b class="text-white">Mando:</b> X·Y·LB puños • A·B·RB patadas • LT+RT súper</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1760,7 +1759,7 @@
             }
         }
 
-        function addBotToRoom(persist = true) {
+        function addBotToRoom() {
             const room = state.currentRoom;
             if (!room || room.slots.length >= 8) return;
             const usedArchetypes = room.slots.map(s => s.archetypeId);
@@ -1777,7 +1776,7 @@
                 isHost: false
             });
             sfx.sfxSelect();
-            if (persist) net.saveRoomState(room);
+            net.saveRoomState(room);
         }
 
         // =========================================================================
@@ -1905,6 +1904,7 @@
             { cost: 30, dmg: 80, speed: 1.25, r: 24 }
         ];
         const CLIENT_FORCED = new Set(['hurt', 'stun', 'held', 'down', 'getup', 'ko', 'throw']);
+        const HIT_STOP = { light: 3, medium: 5, heavy: 8, super: 11, hazard: 2, chip: 0 };
         const HIT_SHAKE = { light: 2, medium: 4, heavy: 7, super: 10, hazard: 5, chip: 1 };
 
         const POSE_JUMP_UP = mkPose({ lean: 0.05, legF: [1.1, -1.7], legB: [0.25, -1.3], armF: [1.2, 1.5], armB: [0.9, 1.7] });
@@ -6292,19 +6292,21 @@
             document.getElementById('modal-settings').classList.add('hidden');
         };
 
-        function selectSettingsTab(active) {
-            const inactive = active === 'gamepad' ? 'keyboard' : 'gamepad';
-            const activeClass = 'px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40';
-            const inactiveClass = 'px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white';
+        document.getElementById('tab-btn-gamepad').onclick = () => {
             sfx.sfxSelect();
-            document.getElementById(`tab-btn-${active}`).className = activeClass;
-            document.getElementById(`tab-btn-${inactive}`).className = inactiveClass;
-            document.getElementById(`tab-panel-${active}`).classList.remove('hidden');
-            document.getElementById(`tab-panel-${inactive}`).classList.add('hidden');
-        }
+            document.getElementById('tab-btn-gamepad').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40";
+            document.getElementById('tab-btn-keyboard').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white";
+            document.getElementById('tab-panel-gamepad').classList.remove('hidden');
+            document.getElementById('tab-panel-keyboard').classList.add('hidden');
+        };
 
-        document.getElementById('tab-btn-gamepad').onclick = () => selectSettingsTab('gamepad');
-        document.getElementById('tab-btn-keyboard').onclick = () => selectSettingsTab('keyboard');
+        document.getElementById('tab-btn-keyboard').onclick = () => {
+            sfx.sfxSelect();
+            document.getElementById('tab-btn-keyboard').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-yellow-500/20 text-yellow-300 border-t border-x border-yellow-500/40";
+            document.getElementById('tab-btn-gamepad').className = "px-4 py-2 text-xs font-bold rounded-t-lg bg-slate-900 text-slate-400 hover:text-white";
+            document.getElementById('tab-panel-keyboard').classList.remove('hidden');
+            document.getElementById('tab-panel-gamepad').classList.add('hidden');
+        };
 
         document.getElementById('btn-reset-binds').onclick = () => {
             sfx.sfxSelect();
@@ -6412,42 +6414,37 @@
             showToast(`Código "${code}" copiado`, 'success');
         };
 
-        function updateHostRoomSetting(setting, value) {
-            const room = state.currentRoom;
-            if (!room || room.hostId !== net.userId) return;
-            room[setting] = value;
-            net.saveRoomState(room);
-        }
+        document.getElementById('select-arena').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.arena = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
 
-        [
-            ['select-arena', 'arena'],
-            ['select-difficulty', 'difficulty'],
-            ['select-mode', 'mode'],
-            ['select-timer-mode', 'timerMode']
-        ].forEach(([elementId, setting]) => {
-            document.getElementById(elementId).onchange = (e) => updateHostRoomSetting(setting, e.target.value);
-        });
+        document.getElementById('select-difficulty').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.difficulty = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
 
-        function returnToLobbyOrMenu() {
-            const room = state.currentRoom;
-            if (!room) {
-                switchScreen('menu');
-                return;
-            }
-            room.status = 'lobby';
-            net.saveRoomState(room);
-            switchScreen('lobby');
-            renderLobby(room);
-        }
+        document.getElementById('select-mode').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.mode = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
+
+        document.getElementById('select-timer-mode').onchange = (e) => {
+            if (!state.currentRoom || state.currentRoom.hostId !== net.userId) return;
+            state.currentRoom.timerMode = e.target.value;
+            net.saveRoomState(state.currentRoom);
+        };
 
         document.getElementById('btn-add-bot').onclick = () => addBotToRoom();
 
         document.getElementById('btn-fill-bots').onclick = () => {
-            const room = state.currentRoom;
-            if (!room) return;
-            const initialCount = room.slots.length;
-            while (room.slots.length < 8) addBotToRoom(false);
-            if (room.slots.length !== initialCount) net.saveRoomState(room);
+            if (!state.currentRoom) return;
+            while (state.currentRoom.slots.length < 8) {
+                addBotToRoom();
+            }
         };
 
         document.getElementById('btn-clear-bots').onclick = () => {
@@ -6478,7 +6475,14 @@
                 return;
             }
             if (state.gameInstance) state.gameInstance.destroy();
-            returnToLobbyOrMenu();
+            if (state.currentRoom) {
+                state.currentRoom.status = 'lobby';
+                net.saveRoomState(state.currentRoom);
+                switchScreen('lobby');
+                renderLobby(state.currentRoom);
+            } else {
+                switchScreen('menu');
+            }
         };
 
         document.getElementById('btn-rematch').onclick = async () => {
@@ -6497,11 +6501,18 @@
 
         document.getElementById('btn-back-lobby').onclick = () => {
             sfx.sfxSelect();
-            if (state.currentRoom && !state.currentRoom.isLocal && state.currentRoom.hostId !== net.userId) {
-                showToast('El anfitrión debe volver al lobby.', 'warn');
-                return;
+            if (state.currentRoom) {
+                if (!state.currentRoom.isLocal && state.currentRoom.hostId !== net.userId) {
+                    showToast('El anfitrión debe volver al lobby.', 'warn');
+                    return;
+                }
+                state.currentRoom.status = 'lobby';
+                net.saveRoomState(state.currentRoom);
+                switchScreen('lobby');
+                renderLobby(state.currentRoom);
+            } else {
+                switchScreen('menu');
             }
-            returnToLobbyOrMenu();
         };
 
         window.addEventListener('resize', () => {
@@ -6534,6 +6545,8 @@
         // PESTAÑAS (solo se activan en horizontal bajo: menú y lobby)
         // =========================================================================
         (function setupTabs() {
+            document.getElementById('btn-allow-portrait').onclick = () => document.body.classList.add('allow-portrait');
+
             function build(host, before, tabs, group) {
                 const bar = document.createElement('div');
                 bar.className = 'tabbar';
@@ -6561,10 +6574,11 @@
             // MENÚ: luchador | salas | controles
             const menu = document.getElementById('screen-menu');
             const grid = menu.querySelector(':scope > div');
+            const left = grid.children[0], right = grid.children[1];
             const selMenu = build(menu, grid, [
-                { id: 'fighter', label: '🥊 LUCHADOR', sel: ['#menu-fighter-panel'] },
-                { id: 'rooms', label: '🎮 SALAS', sel: ['#menu-rooms-panel'] },
-                { id: 'controls', label: '📖 CONTROLES', sel: ['#menu-controls-panel'] }
+                { id: 'fighter', label: '🥊 LUCHADOR', sel: ['#screen-menu > div > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(2)', '#fighter-details'] },
+                { id: 'rooms', label: '🎮 SALAS', sel: ['#screen-menu > div > div:nth-child(2)'] },
+                { id: 'controls', label: '📖 CONTROLES', sel: ['#screen-menu > div > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(4)'] }
             ], 'menu');
 
             window.__menuTabs = selMenu;
