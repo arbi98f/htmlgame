@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#07090e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="landscape">
     <title>STREET BRAWL 8: ARCADE ROYALE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
@@ -93,12 +97,167 @@
             border-color: #facc15 !important;
             background-color: #854d0e !important;
         }
+
+        /* ===== AJUSTES MÓVIL / LANDSCAPE (depuración) ===== */
+        html, body { height: 100%; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+        body { height: 100vh; height: 100dvh; width: 100vw; touch-action: manipulation; }
+        #screen-menu, #screen-lobby { max-height: 100vh; max-height: 100dvh; }
+        #screen-game { height: 100vh; height: 100dvh; touch-action: none; }
+        #game-canvas { touch-action: none; }
+        @media (max-height: 520px) {
+            #screen-menu, #screen-lobby { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+            #modal-settings > div, #screen-results > div { max-height: 94dvh; overflow-y: auto; padding: 12px 16px; gap: 10px; }
+            #results-leaderboard { max-height: 32dvh; }
+            #winner-title { font-size: 1.1rem; }
+        }
+
+        /* ----- HUD compacto y adaptable (16:9, 18:9, 19.5:9, 20:9...) ----- */
+        .hud-bar {
+            width: 100%; z-index: 30; pointer-events: none; flex: 0 0 auto;
+            background: linear-gradient(to bottom, rgba(0,0,0,.95), rgba(2,6,23,.82), transparent);
+            padding: max(3px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 5px max(8px, env(safe-area-inset-left));
+        }
+        .hud-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; color: #cbd5e1; font-size: clamp(9px, 2vh, 12px); }
+        .hud-left { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; }
+        .hud-right { display: flex; align-items: center; justify-content: flex-end; gap: 5px; flex: 1 1 0; pointer-events: auto; }
+        .hud-chip { padding: 1px 6px; border-radius: 4px; border: 1px solid; font-size: clamp(8px, 1.8vh, 11px); overflow: hidden; text-overflow: ellipsis; }
+        .hud-btn { min-width: 30px; height: clamp(24px, 6vh, 32px); padding: 0 8px; border-radius: 6px; border: 1px solid rgba(100,116,139,.8); background: rgba(30,41,59,.9); color: #e2e8f0; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .hud-btn.exit { background: rgba(127,29,29,.85); border-color: rgba(239,68,68,.55); color: #fecaca; }
+        .hud-timer { font-family: 'Press Start 2P', monospace; color: #facc15; font-size: clamp(14px, 4vh, 24px); text-align: center; min-width: 3ch; text-shadow: 0 2px 0 #000; }
+        .hud-players { display: grid; gap: 4px; margin-top: 3px; grid-template-columns: repeat(var(--n, 8), minmax(0, 1fr)); }
+        .hud-card { border-radius: 6px; padding: 2px 5px; background: rgba(15,23,42,.9); border: 1px solid rgba(51,65,85,.85); display: flex; flex-direction: column; gap: 2px; min-width: 0; transition: opacity .2s; }
+        .hud-card.me { border-color: #facc15; box-shadow: 0 0 8px rgba(250,204,21,.4); }
+        .hud-card-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; font-weight: 700; line-height: 1; font-size: clamp(8px, 1.9vh, 11px); }
+        .hud-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; color: #fff; }
+        .hud-card.me .hud-name { color: #fde047; }
+        .hud-ko { color: #94a3b8; font-size: clamp(7px, 1.6vh, 9px); flex-shrink: 0; }
+        .hud-hp { width: 100%; height: clamp(5px, 1.3vh, 9px); background: #020617; border: 1px solid #1e293b; border-radius: 2px; overflow: hidden; }
+        .hud-mp { width: 100%; height: clamp(3px, .8vh, 6px); background: #020617; border-radius: 2px; overflow: hidden; }
+        .hud-hp > div, .hud-mp > div { height: 100%; transition: width .1s; }
+        @media (orientation: portrait) { .hud-players { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+        /* ----- Controles táctiles (solo visibles en pantallas táctiles) ----- */
+        #touch-controls { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; pointer-events: none;
+            justify-content: space-between; align-items: flex-end;
+            padding: 0 max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            --tb: clamp(34px, 11.2vh, 56px); user-select: none; -webkit-user-select: none; touch-action: none; }
+        body.touch-on #touch-controls { display: flex; }
+        #touch-controls .tc-group { pointer-events: none; }
+        .tc-dpad { display: grid; grid-template-columns: repeat(3, var(--tb)); grid-template-rows: repeat(3, var(--tb)); gap: 3px; }
+        .tc-actions { display: grid; grid-template-columns: repeat(3, var(--tb)); grid-auto-rows: var(--tb); gap: 5px; align-items: center; justify-items: center; }
+        .touch-btn { pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-family: 'Rajdhani', sans-serif;
+            width: 100%; height: 100%; border: 2px solid rgba(255,255,255,.35); background: rgba(15,23,42,.62); backdrop-filter: blur(2px); font-size: clamp(11px, 3.2vh, 18px); line-height: 1; }
+        .touch-btn.pressed { filter: brightness(1.6); transform: scale(.93); border-color: #fde047; }
+        .tc-dpad .touch-btn { border-radius: 12px; }
+        .tc-dpad .touch-btn.corner { background: rgba(15,23,42,.28); border-color: rgba(255,255,255,.14); color: transparent; }
+        .tc-actions .touch-btn { border-radius: 50%; width: 100%; height: 100%; }
+        .tc-punch { background: rgba(245,158,11,.72); border-color: #fde68a; }
+        .tc-kick { background: rgba(234,88,12,.72); border-color: #fdba74; }
+        .tc-super { background: rgba(220,38,38,.8); border-color: #fca5a5; grid-column: 1 / span 3; border-radius: 999px !important; width: 100%; height: 70%; font-size: clamp(10px, 2.8vh, 15px); letter-spacing: .08em; }
+        .tc-spacer { grid-column: 1 / span 3; }
+
+        /* ----- Aviso para girar a horizontal (solo durante el combate en táctil) ----- */
+        #rotate-overlay { display: none; position: fixed; inset: 0; z-index: 80; background: #07090e; color: #fff; align-items: center; justify-content: center; flex-direction: column; gap: 14px; text-align: center; padding: 24px; }
+        #rotate-overlay .rot-icon { font-size: 64px; animation: rotPhone 1.6s ease-in-out infinite; }
+        @keyframes rotPhone { 0%, 30% { transform: rotate(0deg); } 70%, 100% { transform: rotate(-90deg); } }
+        @media (orientation: portrait) { body.touch-on:not(.allow-portrait) #rotate-overlay { display: flex; } }
+
+        /* ----- Pestañas para menú y lobby en horizontal bajo (celulares) ----- */
+        .tabbar { display: none; }
+        @media (orientation: landscape) and (max-height: 520px) {
+            .tabbar { display: flex; gap: 6px; position: sticky; top: 0; z-index: 6; padding: 4px 0; background: linear-gradient(#07090e 70%, transparent); }
+            .tabbar button { flex: 1 1 0; padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(100,116,139,.6); background: rgba(15,23,42,.9); color: #94a3b8; font-weight: 800; font-size: 12px; white-space: nowrap; }
+            .tabbar button.on { background: rgba(250,204,21,.18); border-color: #facc15; color: #fde047; }
+            .tab-off { display: none !important; }
+            #screen-menu, #screen-lobby { padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 8px; gap: 6px; }
+            #screen-menu > header { padding: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+            #screen-menu > header > div, #screen-menu > header > p { display: none; }
+            #screen-menu > header h1 { font-size: 1.15rem; margin: 0; }
+            #fighter-grid { grid-template-columns: repeat(8, minmax(0, 1fr)) !important; gap: 5px; }
+            #fighter-details { flex-direction: row !important; }
+            #screen-lobby > .arcade-panel { padding: 8px 12px; gap: 8px; }
+            #screen-lobby > .arcade-panel > div:first-child { padding-bottom: 6px; flex-direction: row !important; }
+            #lobby-slots-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px; }
+            #lobby-room-code { font-size: 1.25rem; }
+            #screen-menu .arcade-panel { padding: 10px 12px; }
+        }
+
+        /* ===== v4: FAB pantalla completa, botones de acción táctiles y pantallas compactas ===== */
+        .global-fab { position: fixed; top: max(6px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); z-index: 60; width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid rgba(148,163,184,.55); background: rgba(15,23,42,.7); color: #e2e8f0; font-size: 16px; line-height: 1; cursor: pointer; backdrop-filter: blur(2px); }
+        body.in-game .global-fab { display: none; }
+
+        /* Botones de acción: más grandes, más separados y translúcidos como la cruceta */
+        #touch-controls { --ab: clamp(44px, 14vh, 66px); --sb: clamp(44px, 12.5vh, 60px); }
+        #touch-controls .tc-actions { grid-template-columns: var(--sb) repeat(3, var(--ab)) !important; grid-template-rows: repeat(2, var(--ab)) !important; grid-auto-rows: var(--ab) !important;
+            gap: clamp(9px, 3.2vh, 16px) !important; align-items: center; justify-items: center; }
+        #touch-controls .tc-actions .touch-btn { width: 100%; height: 100%; backdrop-filter: blur(2px); }
+        #touch-controls .tc-punch { background: rgba(245,158,11,.30) !important; border-color: rgba(253,230,138,.65) !important; }
+        #touch-controls .tc-kick  { background: rgba(234,88,12,.30) !important; border-color: rgba(253,186,116,.65) !important; }
+        #touch-controls .tc-super { grid-column: 1 !important; grid-row: 1 / span 2 !important; width: 100% !important; height: 100% !important; border-radius: 999px !important;
+            background: rgba(220,38,38,.34) !important; border-color: rgba(252,165,165,.7) !important; writing-mode: vertical-rl; letter-spacing: .15em; font-size: clamp(10px, 2.6vh, 14px) !important; }
+        #touch-controls .tc-actions .touch-btn.pressed { filter: brightness(1.8); }
+
+        @media (orientation: landscape) and (max-height: 520px) {
+            #screen-menu, #screen-lobby { padding-right: max(46px, env(safe-area-inset-right)) !important; padding-top: 6px !important; padding-bottom: 6px !important; gap: 4px !important; }
+
+            /* --- MENÚ: pestaña LUCHADOR --- */
+            #screen-menu > div > div:nth-child(1) { padding: 8px 10px !important; gap: 6px !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(1) { flex-direction: row !important; align-items: center !important; gap: 8px !important; padding-bottom: 6px !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(2) > div:first-child { display: none !important; }
+            #fighter-grid { gap: 4px !important; }
+            .fighter-card { padding: 3px 2px !important; gap: 1px !important; border-radius: 8px !important; }
+            .fighter-card canvas.fighter-preview { width: 12.4vh !important; height: 13.6vh !important; }
+            .fighter-card > div:last-child { display: none !important; }
+            #fighter-details { padding: 6px 10px !important; gap: 8px !important; }
+            #detail-preview { width: 11vh !important; height: 12.6vh !important; }
+            #fighter-details h3 { font-size: 14px !important; }
+            #fighter-details p { margin-top: 1px !important; font-size: 10px !important; }
+            #detail-trait { display: none !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(4) { padding: 6px 10px !important; }
+            #screen-menu > div > div:nth-child(1) > div:nth-child(4) p { font-size: 10.5px !important; }
+
+            /* --- MENÚ: pestaña SALAS (2 columnas) --- */
+            #screen-menu > div > div:nth-child(2) > .arcade-panel { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; padding: 8px 10px !important; }
+            #screen-menu > div > div:nth-child(2) > .arcade-panel > :first-child,
+            #screen-menu > div > div:nth-child(2) > .arcade-panel > :last-child { grid-column: 1 / -1; }
+            #screen-menu > div > div:nth-child(2) > .arcade-panel > div:nth-child(2) p { display: none !important; }
+            #screen-menu > div > div:nth-child(2) > .arcade-panel > div:nth-child(2),
+            #screen-menu > div > div:nth-child(2) > .arcade-panel > div:nth-child(3) { padding: 8px !important; gap: 6px !important; justify-content: center; }
+            #btn-create-room, #btn-join-room, #btn-quick-match { padding-top: 8px !important; padding-bottom: 8px !important; }
+            #input-room-code { padding-top: 6px !important; padding-bottom: 6px !important; }
+
+            /* --- LOBBY: todo en una sola pantalla (2 columnas, sin pestañas) --- */
+            #screen-lobby > .arcade-panel { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); column-gap: 10px; row-gap: 6px !important; padding: 8px 12px !important; align-items: start; }
+            #screen-lobby > .arcade-panel > div:nth-child(1) { grid-column: 1 / -1; flex-direction: row !important; gap: 8px !important; padding-bottom: 6px !important; }
+            #screen-lobby > .arcade-panel > div:nth-child(2) { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; padding: 6px !important; }
+            #screen-lobby > .arcade-panel > div:nth-child(3) { grid-column: 1; grid-row: 3; padding: 6px !important; gap: 6px !important; }
+            #screen-lobby > .arcade-panel > div:nth-child(4) { grid-column: 2; grid-row: 3 / span 2; grid-template-columns: 1fr 1fr !important; gap: 5px !important; }
+            #screen-lobby > .arcade-panel > div:nth-child(5) { grid-column: 1; grid-row: 4; flex-direction: column !important; align-items: stretch !important; gap: 4px !important; padding-top: 4px !important; }
+            #screen-lobby label { margin-bottom: 1px !important; font-size: 10px !important; }
+            #screen-lobby select { padding-top: 4px !important; padding-bottom: 4px !important; }
+            #host-controls button { padding-top: 4px !important; padding-bottom: 4px !important; }
+            #btn-start-match { padding: 8px 12px !important; width: 100% !important; }
+            #lobby-slots-grid > div { padding: 4px 8px !important; height: auto !important; min-height: 0 !important; }
+            #lobby-slots-grid > div[class*="border-dashed"] { height: 44px !important; }
+            #lobby-slots-grid .w-10 { width: 28px !important; height: 28px !important; font-size: 14px !important; }
+        }
     </style>
 </head>
 <body class="relative flex items-center justify-center">
 
     <!-- Efecto CRT Retro -->
     <div class="scanlines fixed inset-0 z-50 opacity-30"></div>
+
+    <button id="btn-global-full" class="global-fab" title="Pantalla completa">⛶</button>
+
+    <!-- Aviso: gira el teléfono -->
+    <div id="rotate-overlay">
+        <div class="rot-icon">📱</div>
+        <div class="font-arcade text-sm text-yellow-400 leading-relaxed">GIRA TU TELÉFONO</div>
+        <p class="text-slate-400 text-sm max-w-xs">El juego está pensado para horizontal: menús, sala y combate.</p>
+        <button id="btn-allow-portrait" class="mt-2 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 text-xs">Continuar en vertical</button>
+    </div>
 
     <!-- Notificaciones Flotantes -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -368,23 +527,22 @@
 
     <!-- ==================== PANTALLA 3: ARENA DE COMBATE ==================== -->
     <div id="screen-game" class="hidden fixed inset-0 z-20 flex flex-col bg-black">
-        <div id="game-hud" class="w-full bg-gradient-to-b from-black/95 via-slate-950/85 to-transparent px-2 sm:px-4 pt-2 pb-3 z-30 pointer-events-none">
-            <div class="max-w-7xl mx-auto flex flex-col gap-1.5">
-                <div class="flex items-center justify-between text-[10px] sm:text-xs font-bold text-slate-300 px-1">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 font-arcade text-[10px]" id="hud-room-code">SALA: -----</span>
-                        <span id="hud-arena-name" class="px-2 py-0.5 rounded bg-sky-500/20 border border-sky-500/40 text-sky-300 font-bold text-[10px]">MAPA: ---</span>
-                        <span id="hud-alive-count" class="text-emerald-400">VIVOS: 8/8</span>
-                    </div>
-                    <div class="font-arcade text-sm sm:text-lg text-yellow-400 drop-shadow" id="hud-timer">99</div>
-                    <div class="pointer-events-auto flex items-center gap-2">
-                        <button id="btn-hud-sound" class="px-2 py-1 rounded bg-slate-800/90 border border-slate-600 text-xs hover:bg-slate-700">🔊</button>
-                        <button id="btn-hud-exit" class="px-2.5 py-1 rounded bg-red-900/80 border border-red-500/50 text-red-200 text-xs font-bold hover:bg-red-800">SALIR</button>
-                    </div>
+        <div id="game-hud" class="hud-bar">
+            <div class="hud-top">
+                <div class="hud-left">
+                    <span class="hud-chip font-arcade bg-yellow-500/20 border-yellow-500/40 text-yellow-300" id="hud-room-code">SALA: -----</span>
+                    <span id="hud-arena-name" class="hud-chip bg-sky-500/20 border-sky-500/40 text-sky-300">MAPA: ---</span>
+                    <span id="hud-alive-count" class="text-emerald-400 whitespace-nowrap">VIVOS: 8/8</span>
                 </div>
-
-                <div id="hud-players-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5"></div>
+                <div class="hud-timer" id="hud-timer">99</div>
+                <div class="hud-right">
+                    <button id="btn-hud-touch" class="hud-btn" title="Mostrar/ocultar controles táctiles">🎮</button>
+                    <button id="btn-hud-full" class="hud-btn" title="Pantalla completa">⛶</button>
+                    <button id="btn-hud-sound" class="hud-btn">🔊</button>
+                    <button id="btn-hud-exit" class="hud-btn exit">SALIR</button>
+                </div>
             </div>
+            <div id="hud-players-grid" class="hud-players"></div>
         </div>
 
         <div id="arena-banner" class="hidden fixed inset-0 z-30 flex items-center justify-center pointer-events-none">
@@ -393,27 +551,30 @@
             </div>
         </div>
 
-        <div class="relative flex-1 w-full h-full overflow-hidden">
+        <div id="canvas-wrap" class="relative flex-1 w-full overflow-hidden" style="min-height:0">
             <canvas id="game-canvas"></canvas>
         </div>
 
-        <div id="touch-controls" class="sm:hidden fixed bottom-3 inset-x-3 z-30 flex items-end justify-between pointer-events-none opacity-85">
-            <div class="grid grid-cols-3 gap-1.5 w-36 h-36 pointer-events-auto">
+        <div id="touch-controls">
+            <div class="tc-group tc-dpad">
+                <button data-key="ArrowUp,ArrowLeft" class="touch-btn corner">↖</button>
+                <button data-key="ArrowUp" class="touch-btn">▲</button>
+                <button data-key="ArrowUp,ArrowRight" class="touch-btn corner">↗</button>
+                <button data-key="ArrowLeft" class="touch-btn">◀</button>
                 <div></div>
-                <button data-key="ArrowUp" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▲</button>
-                <div></div>
-                <button data-key="ArrowLeft" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">◀</button>
-                <button data-key="ArrowDown" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▼</button>
-                <button data-key="ArrowRight" class="touch-btn bg-slate-800/80 border border-slate-500 rounded-xl flex items-center justify-center text-lg active:bg-yellow-500/50">▶</button>
+                <button data-key="ArrowRight" class="touch-btn">▶</button>
+                <button data-key="ArrowDown,ArrowLeft" class="touch-btn corner">↙</button>
+                <button data-key="ArrowDown" class="touch-btn">▼</button>
+                <button data-key="ArrowDown,ArrowRight" class="touch-btn corner">↘</button>
             </div>
-            <div class="grid grid-cols-4 gap-1.5 pointer-events-auto">
-                <button data-key="KeyU" class="touch-btn w-11 h-11 rounded-full bg-amber-400/80 border-2 border-amber-200 font-bold text-[10px] flex items-center justify-center">P.D</button>
-                <button data-key="KeyI" class="touch-btn w-11 h-11 rounded-full bg-amber-500/80 border-2 border-amber-200 font-bold text-[10px] flex items-center justify-center">P.M</button>
-                <button data-key="KeyO" class="touch-btn w-11 h-11 rounded-full bg-amber-600/80 border-2 border-amber-200 font-bold text-[10px] flex items-center justify-center">P.F</button>
-                <button data-key="KeyO,KeyL" class="touch-btn w-11 h-11 rounded-full bg-red-600/80 border-2 border-red-300 font-bold text-[10px] flex items-center justify-center">SÚPER</button>
-                <button data-key="KeyJ" class="touch-btn w-11 h-11 rounded-full bg-orange-400/80 border-2 border-orange-200 font-bold text-[10px] flex items-center justify-center">K.D</button>
-                <button data-key="KeyK" class="touch-btn w-11 h-11 rounded-full bg-orange-500/80 border-2 border-orange-200 font-bold text-[10px] flex items-center justify-center">K.M</button>
-                <button data-key="KeyL" class="touch-btn w-11 h-11 rounded-full bg-orange-600/80 border-2 border-orange-200 font-bold text-[10px] flex items-center justify-center">K.F</button>
+            <div class="tc-group tc-actions">
+                <button data-key="Super" class="touch-btn tc-super">SÚPER</button>
+                <button data-key="KeyU" class="touch-btn tc-punch">P.D</button>
+                <button data-key="KeyI" class="touch-btn tc-punch">P.M</button>
+                <button data-key="KeyO" class="touch-btn tc-punch">P.F</button>
+                <button data-key="KeyJ" class="touch-btn tc-kick">K.D</button>
+                <button data-key="KeyK" class="touch-btn tc-kick">K.M</button>
+                <button data-key="KeyL" class="touch-btn tc-kick">K.F</button>
             </div>
         </div>
     </div>
@@ -1327,6 +1488,9 @@
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(`screen-${screenName}`).classList.remove('hidden');
+            document.body.classList.toggle('in-game', screenName === 'game');
+            TouchPad.refresh();
+            if (screenName !== 'game') TouchPad.releaseAll();
 
             if (screenName === 'menu' || screenName === 'lobby') {
                 sfx.stopAmbientSound();
@@ -2564,6 +2728,95 @@
         // =========================================================================
         // 6. MOTOR DE COMBATE (TEKKEN JUGGLE COMBOS & BLOQUEO DIRECCIONAL)
         // =========================================================================
+
+        // =========================================================================
+        // UTILIDADES: escape HTML (los nombres llegan por red) y CONTROLES TÁCTILES
+        // =========================================================================
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        const TouchPad = {
+            held: {},          // código -> nº de dedos que lo mantienen
+            pointers: new Map(), // pointerId -> [códigos]
+            ready: false,
+            isTouchDevice() {
+                const mm = q => window.matchMedia && window.matchMedia(q).matches;
+                return mm('(pointer: coarse)') || (navigator.maxTouchPoints > 0 && !mm('(hover: hover)'));
+            },
+            pref() { try { return localStorage.getItem('touch_controls_v1'); } catch (e) { return null; } },
+            shouldShow() {
+                const p = this.pref();
+                if (p === 'on') return true;
+                if (p === 'off') return false;
+                return this.isTouchDevice();
+            },
+            refresh() { document.body.classList.toggle('touch-on', this.shouldShow()); },
+            toggle() {
+                try { localStorage.setItem('touch_controls_v1', this.shouldShow() ? 'off' : 'on'); } catch (e) {}
+                this.refresh();
+            },
+            press(codes) { codes.forEach(c => { this.held[c] = (this.held[c] || 0) + 1; }); this.paint(); },
+            release(codes) { codes.forEach(c => { this.held[c] = Math.max(0, (this.held[c] || 0) - 1); }); this.paint(); },
+            releaseAll() {
+                this.held = {}; this.pointers.clear(); this.paint();
+            },
+            paint() {
+                document.querySelectorAll('#touch-controls .touch-btn').forEach(b => {
+                    const codes = (b.dataset.key || '').split(',');
+                    b.classList.toggle('pressed', codes.every(c => (this.held[c] || 0) > 0));
+                });
+            },
+            isDown(code) { return (this.held[code] || 0) > 0; },
+            codesAt(x, y) {
+                const el = document.elementFromPoint(x, y);
+                const btn = el && el.closest ? el.closest('#touch-controls .touch-btn') : null;
+                return btn ? (btn.dataset.key || '').split(',') : [];
+            },
+            init() {
+                if (this.ready) return;
+                this.ready = true;
+                const root = document.getElementById('touch-controls');
+                const move = (e, codes) => {
+                    const prev = this.pointers.get(e.pointerId) || [];
+                    if (prev.join() === codes.join()) return;
+                    this.release(prev);
+                    this.pointers.set(e.pointerId, codes);
+                    this.press(codes);
+                };
+                root.addEventListener('pointerdown', (e) => {
+                    const codes = this.codesAt(e.clientX, e.clientY);
+                    if (!codes.length) return;
+                    e.preventDefault();
+                    try { root.setPointerCapture(e.pointerId); } catch (err) {}
+                    move(e, codes);
+                });
+                // Deslizar el dedo por la cruceta cambia de dirección sin soltar; las acciones se mantienen
+                root.addEventListener('pointermove', (e) => {
+                    if (!this.pointers.has(e.pointerId)) return;
+                    e.preventDefault();
+                    const cur = this.pointers.get(e.pointerId) || [];
+                    const isDir = cur.some(c => c.startsWith('Arrow'));
+                    if (!isDir) return;
+                    const codes = this.codesAt(e.clientX, e.clientY);
+                    if (codes.length && codes.some(c => c.startsWith('Arrow'))) move(e, codes);
+                });
+                const end = (e) => {
+                    if (!this.pointers.has(e.pointerId)) return;
+                    this.release(this.pointers.get(e.pointerId));
+                    this.pointers.delete(e.pointerId);
+                };
+                ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => root.addEventListener(t, end));
+                root.addEventListener('contextmenu', e => e.preventDefault());
+                window.addEventListener('blur', () => this.releaseAll());
+                document.addEventListener('visibilitychange', () => { if (document.hidden) this.releaseAll(); });
+                window.matchMedia && window.matchMedia('(pointer: coarse)').addEventListener &&
+                    window.matchMedia('(pointer: coarse)').addEventListener('change', () => this.refresh());
+                this.refresh();
+            }
+        };
+        document.addEventListener('contextmenu', (e) => { if (!document.getElementById('screen-game').classList.contains('hidden')) e.preventDefault(); });
+
         class BattleArenaEngine {
             constructor(canvas, room, localUserId) {
                 this.canvas = canvas;
@@ -2717,6 +2970,7 @@
                 document.getElementById('hud-arena-name').textContent = `${this.arena.icon} ${this.arena.name.toUpperCase()}${this.teamMode ? ' • ' + MODE_LABELS[this.mode] : ''}`;
                 const grid = document.getElementById('hud-players-grid');
                 grid.innerHTML = '';
+                grid.style.setProperty('--n', Math.max(1, Math.min(8, this.fighters.length)));
 
                 const list = this.teamMode ? [...this.fighters].sort((a, b) => a.team - b.team) : this.fighters;
                 list.forEach((f) => {
@@ -2724,21 +2978,15 @@
                     const teamCol = this.teamMode ? TEAM_COLORS[f.team].c : null;
                     const card = document.createElement('div');
                     card.id = `hud-card-${f.id}`;
-                    card.className = `rounded-lg px-2 py-1 bg-slate-900/90 border ${isMe ? 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.4)]' : 'border-slate-700/80'} flex flex-col gap-0.5 transition-opacity`;
+                    card.className = `hud-card${isMe ? ' me' : ''}`;
                     if (teamCol) card.style.borderLeft = `4px solid ${teamCol}`;
                     card.innerHTML = `
-                        <div class="flex items-center justify-between text-[10px] font-bold leading-none">
-                            <span class="truncate max-w-[75%] ${isMe ? 'text-yellow-300' : 'text-white'}">
-                                ${f.archetype.icon} ${f.name}
-                            </span>
-                            <span class="text-[9px] text-slate-400">KO:${f.kos}</span>
+                        <div class="hud-card-top">
+                            <span class="hud-name">${f.archetype.icon} ${escapeHtml(f.name)}</span>
+                            <span class="hud-ko">KO:${f.kos}</span>
                         </div>
-                        <div class="w-full h-2 bg-slate-950 rounded-sm overflow-hidden border border-slate-800">
-                            <div id="hud-hp-${f.id}" class="h-full transition-all duration-100" style="width: 100%; background: linear-gradient(90deg, #ef4444, #facc15, #22c55e);"></div>
-                        </div>
-                        <div class="w-full h-1.5 bg-slate-950 rounded-sm overflow-hidden">
-                            <div id="hud-mp-${f.id}" class="h-full transition-all duration-100" style="width: 15%; background-color: ${f.archetype.primary};"></div>
-                        </div>
+                        <div class="hud-hp"><div id="hud-hp-${f.id}" style="width: 100%; background: linear-gradient(90deg, #ef4444, #facc15, #22c55e);"></div></div>
+                        <div class="hud-mp"><div id="hud-mp-${f.id}" style="width: 15%; background-color: ${f.archetype.primary};"></div></div>
                     `;
                     grid.appendChild(card);
                 });
@@ -2759,7 +3007,7 @@
                     }
                     if (card) {
                         card.style.opacity = f.alive ? '1' : '0.4';
-                        const koSpan = card.querySelector('span:last-child');
+                        const koSpan = card.querySelector('.hud-ko');
                         if (koSpan) koSpan.textContent = `KO:${f.kos}`;
                     }
                 });
@@ -2795,12 +3043,17 @@
                 window.addEventListener('gamepadconnected', this._onGamepadConnected);
                 window.addEventListener('gamepaddisconnected', this._onGamepadDisconnected);
 
-                document.querySelectorAll('.touch-btn').forEach(btn => {
-                    const code = btn.getAttribute('data-key');
-                    const codes = code.split(',');
-                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); codes.forEach(c => this.keys[c] = true); });
-                    btn.addEventListener('touchend', (e) => { e.preventDefault(); codes.forEach(c => this.keys[c] = false); });
-                });
+                TouchPad.init();
+                TouchPad.releaseAll();
+                this._onBlur = () => { this.keys = {}; };
+                window.addEventListener('blur', this._onBlur);
+                this._onViewport = () => this.resize();
+                window.addEventListener('orientationchange', this._onViewport);
+                if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onViewport);
+                if (window.ResizeObserver) {
+                    this._ro = new ResizeObserver(() => this.resize());
+                    this._ro.observe(this.canvas.parentElement);
+                }
             }
 
             destroy() {
@@ -2810,12 +3063,19 @@
                 window.removeEventListener('keyup', this._onKeyUp);
                 window.removeEventListener('gamepadconnected', this._onGamepadConnected);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnected);
+                window.removeEventListener('blur', this._onBlur);
+                window.removeEventListener('orientationchange', this._onViewport);
+                if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onViewport);
+                if (this._ro) { this._ro.disconnect(); this._ro = null; }
+                TouchPad.releaseAll();
             }
 
             resize() {
                 const rect = this.canvas.parentElement.getBoundingClientRect();
-                this.canvas.width = rect.width;
-                this.canvas.height = rect.height;
+                const w = Math.max(2, Math.round(rect.width));
+                const h = Math.max(2, Math.round(rect.height));
+                if (this.canvas.width !== w) this.canvas.width = w;
+                if (this.canvas.height !== h) this.canvas.height = h;
             }
 
             showBanner(text, duration = 1200) {
@@ -2839,12 +3099,24 @@
                     this.matchState = 'fighting';
                 }, 1150);
 
+                // Paso fijo de 60 actualizaciones/seg: la lógica del juego cuenta "frames", así que
+                // sin esto iba 2.75x más rápido en 165 Hz y 2x en celulares de 120 Hz.
                 this.lastTime = performance.now();
+                this.accum = 0;
+                const STEP = 1 / 60;
                 const loop = (now) => {
                     if (!this.running) return;
-                    const dt = Math.min(0.05, (now - this.lastTime) / 1000);
+                    let frameDt = Math.max(0, (now - this.lastTime) / 1000);
                     this.lastTime = now;
-                    this.update(dt);
+                    if (frameDt > 0.25) frameDt = 0.25; // pestaña en segundo plano / tirón largo
+                    this.accum += frameDt;
+                    let steps = 0;
+                    while (this.accum >= STEP - 0.002 && steps < 5) {
+                        this.update(STEP);
+                        this.accum -= STEP;
+                        steps++;
+                    }
+                    if (steps === 5) this.accum = 0;
                     this.render();
                     requestAnimationFrame(loop);
                 };
@@ -2887,6 +3159,19 @@
                     t2: isGpBtn('t2')
                 };
                 for (const b of ATTACK_BUTTONS) raw[b] = isKbKey(b) || isGpBtn(b);
+
+                // Controles táctiles (no dependen de los controles reasignados del teclado)
+                if (TouchPad.isDown('ArrowLeft')) raw.left = true;
+                if (TouchPad.isDown('ArrowRight')) raw.right = true;
+                if (TouchPad.isDown('ArrowUp')) raw.up = true;
+                if (TouchPad.isDown('ArrowDown')) raw.down = true;
+                if (TouchPad.isDown('KeyU')) raw.lp = true;
+                if (TouchPad.isDown('KeyI')) raw.mp = true;
+                if (TouchPad.isDown('KeyO')) raw.hp = true;
+                if (TouchPad.isDown('KeyJ')) raw.lk = true;
+                if (TouchPad.isDown('KeyK')) raw.mk = true;
+                if (TouchPad.isDown('KeyL')) raw.hk = true;
+                if (TouchPad.isDown('Super')) { raw.t1 = true; raw.t2 = true; }
 
                 // Contadores de pulsación: así la red nunca pierde un toque rápido
                 this._pc = this._pc || {};
@@ -4345,10 +4630,15 @@
                 let centerX = (minX + maxX) / 2;
                 let centerY = (minY + maxY) / 2;
                 const viewW = this.canvas.width;
+                // Con controles táctiles en pantalla, sube la acción para que no quede tapada
+                const tOff = document.body.classList.contains('touch-on') ? (this.canvas.height * 0.13) / Math.max(0.3, this.camera.zoom) : 0;
+                centerY += tOff;
                 const spanX = Math.max(680, maxX - minX);
                 // Nunca alejar más de lo que mide la arena
                 const minZoom = viewW / (this.worldWidth + 40);
-                let targetZoom = Math.max(minZoom, Math.max(0.55, Math.min(1.08, viewW / spanX)));
+                const viewH = this.canvas.height;
+                const spanY = Math.max(320, maxY - minY) + 70;
+                let targetZoom = Math.max(minZoom, Math.max(0.5, Math.min(1.08, viewW / spanX, viewH / spanY)));
 
                 const fc = this.camera.focus;
                 if (fc && fc.frames > 0) {
@@ -4363,7 +4653,7 @@
                 const halfW = viewW / 2 / this.camera.zoom;
                 const lo = halfW - 20, hi = this.worldWidth + 20 - halfW;
                 const tx = lo > hi ? this.worldWidth / 2 : Math.max(lo, Math.min(hi, centerX));
-                const maxCamY = this.groundY + 150 - (this.canvas.height / 2) / Math.max(0.3, this.camera.zoom);
+                const maxCamY = this.groundY + 150 + tOff - (this.canvas.height / 2) / Math.max(0.3, this.camera.zoom);
                 this.camera.x += (tx - this.camera.x) * 0.1;
                 this.camera.x = lo > hi ? this.camera.x : Math.max(lo, Math.min(hi, this.camera.x));
                 this.camera.y += (Math.min(centerY, maxCamY) - this.camera.y) * 0.1;
@@ -4421,7 +4711,7 @@
                 sfx.stopAmbientSound();
                 const teamWin = res.team !== undefined;
                 const title = document.getElementById('winner-title');
-                title.textContent = teamWin ? `🏆 ¡GANA EQUIPO ${TEAM_COLORS[res.team].name}!` : `🏆 ¡GANADOR: ${res.fighter.name}!`;
+                title.textContent = teamWin ? `🏆 ¡GANA EQUIPO ${TEAM_COLORS[res.team].name}!` : `🏆 ¡GANADOR: ${res.fighter ? res.fighter.name : '---'}!`;
                 const sorted = [...this.fighters].sort((a, b) => {
                     if (teamWin && (a.team === res.team) !== (b.team === res.team)) return a.team === res.team ? -1 : 1;
                     if (a.alive !== b.alive) return a.alive ? -1 : 1;
@@ -4441,7 +4731,7 @@
                         <div class="col-span-5 flex items-center gap-2 truncate">
                             ${chip}
                             <span>${f.archetype.icon}</span>
-                            <span class="truncate">${f.name}</span>
+                            <span class="truncate">${escapeHtml(f.name)}</span>
                         </div>
                         <div class="col-span-3 text-center font-bold text-red-400">${f.kos} K.O.</div>
                         <div class="col-span-3 text-right font-bold text-sky-400">${f.damageDealt} DMG</div>
@@ -6233,6 +6523,71 @@
         window.addEventListener('resize', () => {
             if (state.gameInstance) state.gameInstance.resize();
         });
+
+        // Botones extra del HUD: controles táctiles y pantalla completa (intenta bloquear horizontal)
+        document.getElementById('btn-hud-touch').onclick = () => TouchPad.toggle();
+        async function toggleFullscreen() {
+            try {
+                if (!document.documentElement.requestFullscreen) throw new Error('nofs');
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+                    if (screen.orientation && screen.orientation.lock) { try { await screen.orientation.lock('landscape'); } catch (e) {} }
+                } else {
+                    await document.exitFullscreen();
+                }
+            } catch (e) { showToast('Tu navegador no permite pantalla completa. En iPhone usa Compartir → Añadir a pantalla de inicio.', 'warn'); }
+        }
+        document.getElementById('btn-hud-full').onclick = toggleFullscreen;
+        document.getElementById('btn-global-full').onclick = toggleFullscreen;
+        document.addEventListener('fullscreenchange', () => {
+            const t = document.fullscreenElement ? '⤡' : '⛶';
+            document.getElementById('btn-global-full').textContent = t;
+            document.getElementById('btn-hud-full').textContent = t;
+        });
+        TouchPad.refresh();
+
+        // =========================================================================
+        // PESTAÑAS (solo se activan en horizontal bajo: menú y lobby)
+        // =========================================================================
+        (function setupTabs() {
+            document.getElementById('btn-allow-portrait').onclick = () => document.body.classList.add('allow-portrait');
+
+            function build(host, before, tabs, group) {
+                const bar = document.createElement('div');
+                bar.className = 'tabbar';
+                const items = tabs.map(t => ({ ...t, els: t.sel.map(s => document.querySelector(s)).filter(Boolean) }));
+                items.forEach(t => t.els.forEach(e => { e.dataset.tab = (e.dataset.tab ? e.dataset.tab + ' ' : '') + t.id; }));
+                const all = [...new Set(items.flatMap(t => t.els))];
+                const select = (id) => {
+                    bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === id));
+                    all.forEach(e => e.classList.toggle('tab-off', !e.dataset.tab.split(' ').includes(id)));
+                    try { sessionStorage.setItem('tab_' + group, id); } catch (e) {}
+                };
+                items.forEach(t => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.dataset.t = t.id; b.textContent = t.label;
+                    b.onclick = () => { select(t.id); host.scrollTop = 0; };
+                    bar.appendChild(b);
+                });
+                before.parentNode.insertBefore(bar, before);
+                let start = items[0].id;
+                try { const s = sessionStorage.getItem('tab_' + group); if (items.some(i => i.id === s)) start = s; } catch (e) {}
+                select(start);
+                return select;
+            }
+
+            // MENÚ: luchador | controles | salas
+            const menu = document.getElementById('screen-menu');
+            const grid = menu.querySelector(':scope > div');
+            const left = grid.children[0], right = grid.children[1];
+            const selMenu = build(menu, grid, [
+                { id: 'fighter', label: '🥊 LUCHADOR', sel: ['#screen-menu > div > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(2)', '#fighter-details'] },
+                { id: 'controls', label: '📖 CONTROLES', sel: ['#screen-menu > div > div:nth-child(1)', '#screen-menu > div > div:nth-child(1) > div:nth-child(4)'] },
+                { id: 'rooms', label: '🎮 SALAS', sel: ['#screen-menu > div > div:nth-child(2)'] }
+            ], 'menu');
+
+            window.__menuTabs = selMenu;
+        })();
 
         window.onload = async () => {
             renderFighterGrid();
