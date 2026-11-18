@@ -269,6 +269,8 @@ class BattleArenaEngine {
         window.removeEventListener('orientationchange', this._onViewport);
         if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onViewport);
         if (this._ro) { this._ro.disconnect(); this._ro = null; }
+        if (this._stopBg) this._stopBg();
+        if (this._onVisibility && typeof document.removeEventListener === 'function') document.removeEventListener('visibilitychange', this._onVisibility);
         TouchPad.releaseAll();
     }
 
@@ -306,11 +308,11 @@ class BattleArenaEngine {
         this.lastTime = performance.now();
         this.accum = 0;
         const STEP = 1 / 60;
-        const loop = (now) => {
+        const tick = (now, draw) => {
             if (!this.running) return;
             let frameDt = Math.max(0, (now - this.lastTime) / 1000);
             this.lastTime = now;
-            if (frameDt > 0.25) frameDt = 0.25; // pestaña en segundo plano / tirón largo
+            if (frameDt > 0.25) frameDt = 0.25; // tirón largo
             this.accum += frameDt;
             let steps = 0;
             while (this.accum >= STEP - 0.002 && steps < 5) {
@@ -319,10 +321,34 @@ class BattleArenaEngine {
                 steps++;
             }
             if (steps === 5) this.accum = 0;
-            this.render();
+            if (draw) this.render();
+        };
+        const loop = (now) => {
+            if (!this.running) return;
+            tick(now, true);
             requestAnimationFrame(loop);
         };
         requestAnimationFrame(loop);
+
+        // Pestaña en segundo plano: el navegador detiene requestAnimationFrame y el juego se congelaba
+        // (el anfitrión pausaba a todos los invitados). Un Worker marca el ritmo mientras la pestaña está oculta.
+        this.bgWorker = null;
+        const stopBg = () => { if (this.bgWorker) { this.bgWorker.terminate(); this.bgWorker = null; } };
+        this._onVisibility = () => {
+            if (document.hidden && this.running && typeof Worker !== 'undefined' && typeof Blob !== 'undefined') {
+                if (this.bgWorker) return;
+                try {
+                    const url = URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},16)'], { type: 'text/javascript' }));
+                    this.bgWorker = new Worker(url);
+                    this.bgWorker.onmessage = () => tick(performance.now(), false);
+                } catch (e) { this.bgWorker = null; }
+            } else {
+                stopBg();
+                this.lastTime = performance.now();
+            }
+        };
+        this._stopBg = stopBg;
+        if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', this._onVisibility);
     }
 
     emptyInput() {
