@@ -192,6 +192,9 @@
         #touch-controls .tc-super { grid-column: 1 !important; grid-row: 1 / span 2 !important; width: 100% !important; height: 100% !important; border-radius: 999px !important;
             background: rgba(220,38,38,.34) !important; border-color: rgba(252,165,165,.7) !important; writing-mode: vertical-rl; letter-spacing: .15em; font-size: clamp(10px, 2.6vh, 14px) !important; }
         #touch-controls .tc-actions .touch-btn.pressed { filter: brightness(1.8); }
+        /* v5: SÚPER (arriba) y AGARRE (abajo) comparten la primera columna */
+        #touch-controls .tc-super { grid-column: 1 !important; grid-row: 1 !important; writing-mode: horizontal-tb !important; letter-spacing: .02em !important; border-radius: 50% !important; font-size: clamp(8px, 2.3vh, 12px) !important; }
+        #touch-controls .tc-grab { grid-column: 1 !important; grid-row: 2 !important; border-radius: 50% !important; font-size: clamp(7px, 2vh, 11px); letter-spacing: 0; background: rgba(168,85,247,.34); border: 2px solid rgba(216,180,254,.7); }
 
         @media (orientation: landscape) and (max-height: 520px) {
             #screen-menu, #screen-lobby { padding-right: max(46px, env(safe-area-inset-right)) !important; padding-top: 6px !important; padding-bottom: 6px !important; gap: 4px !important; }
@@ -572,6 +575,7 @@
             </div>
             <div class="tc-group tc-actions">
                 <button data-key="Super" class="touch-btn tc-super">SÚPER</button>
+                <button data-key="Grab" class="touch-btn tc-grab">AGARRE</button>
                 <button data-key="KeyU" class="touch-btn tc-punch">P.D</button>
                 <button data-key="KeyI" class="touch-btn tc-punch">P.M</button>
                 <button data-key="KeyO" class="touch-btn tc-punch">P.F</button>
@@ -3179,6 +3183,7 @@
                 if (TouchPad.isDown('KeyK')) raw.mk = true;
                 if (TouchPad.isDown('KeyL')) raw.hk = true;
                 if (TouchPad.isDown('Super')) { raw.t1 = true; raw.t2 = true; }
+                if (TouchPad.isDown('Grab')) { raw.mp = true; raw.hp = true; }
 
                 // Contadores de pulsación: así la red nunca pierde un toque rápido
                 this._pc = this._pc || {};
