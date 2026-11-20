@@ -53,7 +53,8 @@ const TouchPad = {
     // ---- Controles libres: cada botón se coloca según el perfil del modo (VERSUS / COOP) ----
     WIDGETS: ['move', 'super', 'grab', 'lp', 'mp', 'hp', 'lk', 'mk', 'hk'],
     WIDGET_NAMES: { move: 'Movimiento', super: 'SÚPER', grab: 'AGARRE', lp: 'Puño débil', mp: 'Puño medio', hp: 'Puño fuerte', lk: 'Patada débil', mk: 'Patada media', hk: 'Patada fuerte' },
-    makeWidget(id, moveMode, pos) {
+    makeWidget(id, moveMode, pos, ctrlMode) {
+        const coop = (ctrlMode || CtrlProfiles.playMode) === 'coop';
         const w = document.createElement('div');
         w.className = 'tw' + (id === 'move' ? ' tw-move' : '');
         w.dataset.wid = id;
@@ -72,8 +73,8 @@ const TouchPad = {
         } else if (id === 'super') html = btn('Super', 'tc-super', 'SÚPER');
         else if (id === 'grab') html = btn('Grab', 'tc-grab', 'AGARRE');
         else {
-            const keys = { lp: ['KeyU', 'tc-punch', 'P.D'], mp: ['KeyI', 'tc-punch', 'P.M'], hp: ['KeyO', 'tc-punch', 'P.F'],
-                           lk: ['KeyJ', 'tc-kick', 'K.D'], mk: ['KeyK', 'tc-kick', 'K.M'], hk: ['KeyL', 'tc-kick', 'K.F'] }[id];
+            const keys = { lp: ['KeyU', 'tc-punch', coop ? 'S.C' : 'P.D'], mp: ['KeyI', 'tc-punch', 'P.M'], hp: ['KeyO', 'tc-punch', 'P.F'],
+                           lk: ['KeyJ', 'tc-kick', coop ? 'S.L' : 'K.D'], mk: ['KeyK', 'tc-kick', 'K.M'], hk: ['KeyL', 'tc-kick', 'K.F'] }[id];
             html = btn(keys[0], keys[1], keys[2]);
         }
         w.innerHTML = html;
@@ -85,7 +86,7 @@ const TouchPad = {
         const prof = CtrlProfiles.touch(CtrlProfiles.playMode);
         this.held = {}; this.pointers.clear(); this.stickPtr = null;
         root.innerHTML = '';
-        for (const id of this.WIDGETS) root.appendChild(this.makeWidget(id, prof.mode, prof.layout[id]));
+        for (const id of this.WIDGETS) root.appendChild(this.makeWidget(id, prof.mode, prof.layout[id], CtrlProfiles.playMode));
         this.paint();
     },
     stickUpdate(e) {
@@ -194,7 +195,7 @@ const TouchEditor = {
         const layer = this.$('touch-editor-layer');
         layer.innerHTML = '';
         for (const id of TouchPad.WIDGETS) {
-            const w = TouchPad.makeWidget(id, this.work.mode, this.work.layout[id]);
+            const w = TouchPad.makeWidget(id, this.work.mode, this.work.layout[id], this.mode);
             w.classList.add('tw-edit');
             if (id === this.sel) w.classList.add('sel');
             layer.appendChild(w);
@@ -204,7 +205,7 @@ const TouchEditor = {
         const sel = this.sel, name = this.$('te-sel-name'), rng = this.$('te-size'), val = this.$('te-size-val');
         if (!sel) { name.textContent = 'Toca un botón'; rng.disabled = true; val.textContent = ''; return; }
         const s = Math.round(this.work.layout[sel].s * 100);
-        name.textContent = TouchPad.WIDGET_NAMES[sel];
+        name.textContent = (this.mode === 'coop' && sel === 'lp') ? 'Salto corto' : (this.mode === 'coop' && sel === 'lk') ? 'Salto largo' : TouchPad.WIDGET_NAMES[sel];
         rng.disabled = false; rng.value = s; val.textContent = s + '%';
     },
     setSize(pct) {
