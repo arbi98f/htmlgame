@@ -101,6 +101,13 @@ const BIND_LABELS = {
     left: 'Mover Izquierda', right: 'Mover Derecha'
 };
 
+// En cooperativo cambian los nombres: puño débil = salto corto, patada débil = salto largo, ↑↓ = fondo/frente
+const BIND_LABELS_COOP = { lp: 'Salto corto', lk: 'Salto largo', up: 'Ir al fondo (↑)', down: 'Ir al frente (↓)' };
+function bindLabel(action, mode) {
+    if ((mode || CtrlProfiles.editMode) === 'coop' && BIND_LABELS_COOP[action]) return BIND_LABELS_COOP[action];
+    return BIND_LABELS[action];
+}
+
 let activeRebindAction = null;
 let activeRebindType = null;
 
