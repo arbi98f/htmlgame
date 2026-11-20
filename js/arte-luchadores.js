@@ -121,7 +121,7 @@ const MOVE_DATA = {
 const LOCKED_STATES = new Set(['hurt', 'stun', 'lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'clp', 'cmp', 'chp', 'clk', 'cmk', 'chk', 'jlp', 'jmp', 'jhp', 'jlk', 'jmk', 'jhk', 'launcher', 'special', 'super', 'grab', 'throw', 'roll', 'down', 'getup', 'held']);
 const ATTACK_BUTTONS = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk'];
 const INPUT_EDGES = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 't1', 't2', 'up', 'down', 'left', 'right'];
-const CHARGE_FRAMES = 60;   // 1 segundo cargando hacia atrás
+const CHARGE_FRAMES = 42;   // 0,7 s cargando hacia atrás
 const SPECIAL_LEVELS = [
     { cost: 20, dmg: 60, speed: 0.8, r: 18 },
     { cost: 25, dmg: 70, speed: 1.0, r: 22 },
