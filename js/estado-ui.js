@@ -158,7 +158,7 @@ function renderSettingsUI() {
         row.className = 'bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center';
         const isRebinding = activeRebindType === 'gamepad' && activeRebindAction === action;
         row.innerHTML = `
-            <span class="text-slate-300 font-bold">${BIND_LABELS[action]}</span>
+            <span class="text-slate-300 font-bold">${bindLabel(action)}</span>
             <button data-action="${action}" class="rebind-gp-btn px-3 py-1 rounded-lg ${isRebinding ? 'rebind-active bg-yellow-600 text-white font-extrabold' : 'bg-slate-800 hover:bg-slate-700 text-yellow-400 font-bold'} border border-slate-700">
                 ${isRebinding ? 'PRESIONA UN BOTÓN...' : btnLabel}
             </button>
@@ -177,7 +177,7 @@ function renderSettingsUI() {
         row.className = 'bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center';
         const isRebinding = activeRebindType === 'keyboard' && activeRebindAction === action;
         row.innerHTML = `
-            <span class="text-slate-300 font-bold">${BIND_LABELS[action]}</span>
+            <span class="text-slate-300 font-bold">${bindLabel(action)}</span>
             <button data-action="${action}" class="rebind-kb-btn px-3 py-1 rounded-lg ${isRebinding ? 'rebind-active bg-yellow-600 text-white font-extrabold' : 'bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold'} border border-slate-700">
                 ${isRebinding ? 'PRESIONA UNA TECLA...' : keysLabel}
             </button>
@@ -213,7 +213,7 @@ function pollGamepadRebind() {
                     if (pad.buttons[i].pressed) {
                         CtrlProfiles.gp(CtrlProfiles.editMode)[activeRebindAction] = i;
                         sfx.sfxSelect();
-                        showToast(`Asignado ${BIND_LABELS[activeRebindAction]} a ${GAMEPAD_BUTTON_NAMES[i] || 'Botón ' + i}`, 'success');
+                        showToast(`Asignado ${bindLabel(activeRebindAction)} a ${GAMEPAD_BUTTON_NAMES[i] || 'Botón ' + i}`, 'success');
                         activeRebindAction = null;
                         activeRebindType = null;
                         renderSettingsUI();
@@ -233,7 +233,7 @@ window.addEventListener('keydown', (e) => {
         e.stopPropagation();
         CtrlProfiles.kb(CtrlProfiles.editMode)[activeRebindAction] = [e.code];
         sfx.sfxSelect();
-        showToast(`Asignado ${BIND_LABELS[activeRebindAction]} a ${e.code.replace('Key', '')}`, 'success');
+        showToast(`Asignado ${bindLabel(activeRebindAction)} a ${e.code.replace('Key', '')}`, 'success');
         activeRebindAction = null;
         activeRebindType = null;
         renderSettingsUI();
