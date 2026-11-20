@@ -319,11 +319,8 @@ class CoopArenaEngine extends BattleArenaEngine {
         if (!canAct && ['hurt', 'stun', 'held', 'down', 'getup', 'ko'].includes(f.state)) f.airVx = undefined;
         const boost = f.buffEnergy > 0 ? 1 + COOP.ENERGY_BOOST : 1;
 
-        // Orientación: sin enemigo delante, mirar hacia donde se camina. Con enemigo delante, "atrás" bloquea/carga.
-        if (!f.isBot && canAct && f.onGround && (cmd.left || cmd.right)) {
-            const dir = cmd.left ? -1 : 1;
-            if (dir !== f.facing && !this.enemyInFront(f)) { f.facing = dir; cmd.back = false; }
-        }
+        // Orientación: igual que en el versus, el jugador se voltea tocando "atrás" dos veces seguidas (cmd.turn,
+        // lo procesa el motor base). Un solo toque ya no voltea: sirve para retroceder, bloquear o cargar el poder.
 
         // Salto corto / largo hacia adelante (altura fija, velocidad horizontal comprometida)
         if (cmd.jumpType && canAct && f.onGround) {
